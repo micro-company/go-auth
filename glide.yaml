@@ -1,2 +1,4 @@
 package: .
-import: []
+import:
+- package: github.com/go-chi/chi
+  version: ^3.3.0

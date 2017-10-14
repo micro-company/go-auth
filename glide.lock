@@ -1,0 +1,6 @@
+hash: 56297b914df944fde78b886a07ae5748f1643431b3246fe5e83ef674bb6a0afd
+updated: 2017-10-15T02:29:34.925861387+03:00
+imports:
+- name: github.com/go-chi/chi
+  version: f7c66f685bcab06bcce78ac212c5f3553c063d19
+testImports: []
