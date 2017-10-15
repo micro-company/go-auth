@@ -1,0 +1,120 @@
+{
+	"variables": [],
+	"info": {
+		"name": "go-auth",
+		"_postman_id": "41a11bc0-aa19-5302-746f-91baf4210119",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"description": "",
+			"item": [
+				{
+					"name": "Get JWT tokens",
+					"request": {
+						"url": "{{URL_API}}/jwt",
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Debug JWT token",
+					"request": {
+						"url": "{{URL_API}}/jwt/debug",
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "user",
+			"description": "",
+			"item": []
+		},
+		{
+			"name": "Get users",
+			"request": {
+				"url": "{{URL_API}}/users",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Create users",
+			"request": {
+				"url": "{{URL_API}}/users",
+				"method": "POST",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Update users",
+			"request": {
+				"url": {
+					"raw": "{{URL_API}}/users/:id",
+					"host": [
+						"{{URL_API}}"
+					],
+					"path": [
+						"users",
+						":id"
+					],
+					"query": [],
+					"variable": [
+						{
+							"key": "id",
+							"value": ""
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Delete user",
+			"request": {
+				"url": {
+					"raw": "{{URL_API}}/users/:id",
+					"host": [
+						"{{URL_API}}"
+					],
+					"path": [
+						"users",
+						":id"
+					],
+					"query": [],
+					"variable": [
+						{
+							"key": "id",
+							"value": ""
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
