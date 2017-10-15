@@ -14,6 +14,7 @@ docker-compose up
 | Name ENV         | Default value             |
 |------------------|---------------------------|
 | PORT             | 4070                      |
+| MONGO_URL        | localhost/auth       |
 
 ### technology stack
 

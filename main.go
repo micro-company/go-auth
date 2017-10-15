@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/batazor/go-auth/db"
+	"github.com/batazor/go-auth/handlers/jwt"
 	"github.com/batazor/go-auth/handlers/user"
 	"github.com/batazor/go-auth/utils"
 	"github.com/go-chi/chi"
@@ -39,6 +40,7 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	r.Mount("/user", user.Routes())
+	r.Mount("/jwt", jwt.Routes())
 
 	// start HTTP-server
 	log.Info("Run services on port " + PORT)

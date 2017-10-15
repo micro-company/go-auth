@@ -1,6 +1,8 @@
-hash: 20c7eecc00fda87f8b4987215ac807a621b67e03de6b25d8eaaaed9ce48b58db
-updated: 2017-10-15T03:54:41.938831536+03:00
+hash: 12b654343e796893ee26b350c79df366e50968bddc94701dc2c44dc3f401b59d
+updated: 2017-10-15T04:20:55.057467209+03:00
 imports:
+- name: github.com/dgrijalva/jwt-go
+  version: d2709f9f1f31ebcda9651b03077758c1f3a0018c
 - name: github.com/go-chi/chi
   version: f7c66f685bcab06bcce78ac212c5f3553c063d19
   subpackages:
@@ -12,7 +14,6 @@ imports:
 - name: golang.org/x/crypto
   version: 9419663f5a44be8b34ca85f08abc5fe1be11f8a3
   subpackages:
-  - nacl/auth
   - ssh/terminal
 - name: golang.org/x/sys
   version: 314a259e304ff91bd6985da2a7149bbf91237993
