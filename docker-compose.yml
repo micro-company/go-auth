@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+
+  mongo:
+    image: mongo:3.4.9
+    container_name: mongo
+    restart: always
+    volumes:
+    - ./ops/mongo.conf:/etc/mongo.conf
+    - /data/go-auth/mongodb:/data/db
+
+  api:
+    build: .
+    container_name: api
+    restart: always
+    environment:
+      PORT: 4070
+      MONGO_URL: mongo/auth
+    ports:
+    - "4070:4070"
+    depends_on:
+    - mongo

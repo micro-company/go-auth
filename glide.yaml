@@ -2,3 +2,8 @@ package: .
 import:
 - package: github.com/go-chi/chi
   version: ^3.3.0
+- package: gopkg.in/mgo.v2
+- package: github.com/sirupsen/logrus
+  version: ^1.0.3
+- package: github.com/go-chi/render
+  version: ^1.0.0
