@@ -14,7 +14,21 @@ docker-compose up
 | Name ENV         | Default value             |
 |------------------|---------------------------|
 | PORT             | 4070                      |
-| MONGO_URL        | localhost/auth       |
+| MONGO_URL        | localhost/auth            |
+
+### Generation cert
+
+```
+openssl genrsa \
+    -passout pass:12345678 \
+    -out cert/private_key.pem \
+    2048
+    
+openssl rsa \
+    -passin pass:12345678 \
+    -in cert/private_key.pem \
+    -pubout > cert/public_key.pub
+```
 
 ### technology stack
 

@@ -13,3 +13,8 @@
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 .idea
+
+# Cert
+*.key
+*.pem
+*.pub
