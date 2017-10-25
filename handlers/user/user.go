@@ -19,6 +19,7 @@ func Routes() chi.Router {
 
 	r.Get("/", List)
 	r.Post("/", Create)
+	r.Put("/{userId}", Update)
 
 	return r
 }
@@ -54,8 +55,8 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var book models.User
-	err = json.Unmarshal(b, &book)
+	var user models.User
+	err = json.Unmarshal(b, &user)
 	if err != nil {
 		log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -64,8 +65,8 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := bson.NewObjectId()
-	book.Id = id
-	err = db.Session.DB("books").C(models.CollectionUser).Insert(book)
+	user.Id = id
+	err = db.Session.DB("users").C(models.CollectionUser).Insert(user)
 	if err != nil {
 		log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -73,7 +74,46 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output, err := json.Marshal(book)
+	output, err := json.Marshal(user)
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("{\"success\": false}"))
+		return
+	}
+
+	w.Write(output)
+}
+
+func Update(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("{\"success\": false}"))
+	}
+
+	var user models.User
+	err = json.Unmarshal(b, &user)
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("{\"success\": false}"))
+	}
+
+	var userId = chi.URLParam(r, "userId")
+	err = db.Session.DB("users").C(models.CollectionUser).UpdateId(bson.ObjectIdHex(userId), user)
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("\"success\": false"))
+		return
+	}
+
+	output, err := json.Marshal(user)
 	if err != nil {
 		log.Error(err)
 		w.WriteHeader(http.StatusBadRequest)

@@ -39,7 +39,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	r.Mount("/user", user.Routes())
+	r.Mount("/users", user.Routes())
 	r.Mount("/jwt", jwt.Routes())
 
 	// start HTTP-server
