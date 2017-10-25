@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
+	"github.com/batazor/go-auth/utils"
 )
 
 var log = logrus.New()
@@ -95,6 +96,8 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	id := bson.NewObjectId()
 	user.Id = id
+	user.Password, _ = utils.HashPassword(user.Password)
+
 	err = db.Session.DB("users").C(models.CollectionUser).Insert(user)
 	if err != nil {
 		Error(w, err)
@@ -130,6 +133,8 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	CheckUniqueUser(w, user)
 
 	var userId = chi.URLParam(r, "userId")
+	user.Password, _ = utils.HashPassword(user.Password)
+
 	err = db.Session.DB("users").C(models.CollectionUser).UpdateId(bson.ObjectIdHex(userId), user)
 	if err != nil {
 		Error(w, err)
