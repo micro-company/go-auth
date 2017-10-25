@@ -1,5 +1,7 @@
 # go-auth-server
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/32dbb31cde6ea8f52cf0/maintainability)](https://codeclimate.com/github/batazor/go-auth/maintainability)
+
 Auth micro-service
 
 ### RUN
