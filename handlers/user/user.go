@@ -65,6 +65,26 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check unique mail
+	count, err := db.Session.DB("users").C(models.CollectionUser).Find(bson.M{"mail": user.Mail}).Count()
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("{\"success\": false}"))
+		return
+	}
+
+	if (count > 0) {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{
+			"success": false,
+			"error": [
+				"need unique mail"
+			]
+		}`))
+		return
+	}
+
 	id := bson.NewObjectId()
 	user.Id = id
 	err = db.Session.DB("users").C(models.CollectionUser).Insert(user)
