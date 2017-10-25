@@ -1,9 +1,12 @@
 package models
 
-import "gopkg.in/mgo.v2/bson"
+import (
+	"gopkg.in/mgo.v2/bson"
+	"time"
+)
 
 const (
-	// CollectionBook holds the name of the articles collection
+	// CollectionUser holds the name of the articles collection
 	CollectionUser = "users"
 )
 
@@ -12,6 +15,6 @@ type User struct {
 	Id        bson.ObjectId `json:"id" bson:"_id,omitempty"`
 	Mail      string        `json:"mail" bson:"mail"`
 	Password  string        `json:"password" bson:"password"`
-	CreatedOn int64         `json:"created_on" bson:"created_od"`
-	UpdatedOn int64         `json:"updated_on" bson:"updated_on"`
+	CreatedAt time.Time     `json:"created_at" bson:"created_at"`
+	UpdatedAt time.Time     `json:"updated_at" bson:"updated_at"`
 }
