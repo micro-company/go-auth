@@ -17,12 +17,31 @@ type error interface {
 	Error() string
 }
 
-// Error catch
+// Error handler
 func Error(w http.ResponseWriter, err error) {
 	log.Error(err)
 	w.WriteHeader(http.StatusBadRequest)
 	w.Write([]byte("{\"success\": false}"))
 	return
+}
+
+func CheckUniqueUser(w http.ResponseWriter, user models.User) {
+	count, err := db.Session.DB("users").C(models.CollectionUser).Find(bson.M{"mail": user.Mail}).Count()
+	if err != nil {
+		Error(w, err)
+		return
+	}
+
+	if (count > 0) {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{
+			"success": false,
+			"error": [
+				"need unique mail"
+			]
+		}`))
+		return
+	}
 }
 
 // Routes creates a REST router
@@ -72,23 +91,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check unique mail
-	count, err := db.Session.DB("users").C(models.CollectionUser).Find(bson.M{"mail": user.Mail}).Count()
-	if err != nil {
-		Error(w, err)
-		return
-	}
-
-	if (count > 0) {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{
-			"success": false,
-			"error": [
-				"need unique mail"
-			]
-		}`))
-		return
-	}
+	CheckUniqueUser(w, user)
 
 	id := bson.NewObjectId()
 	user.Id = id
@@ -123,6 +126,8 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		Error(w, err)
 		return
 	}
+
+	CheckUniqueUser(w, user)
 
 	var userId = chi.URLParam(r, "userId")
 	err = db.Session.DB("users").C(models.CollectionUser).UpdateId(bson.ObjectIdHex(userId), user)
