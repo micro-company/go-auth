@@ -20,6 +20,7 @@ func Routes() chi.Router {
 	r.Get("/", List)
 	r.Post("/", Create)
 	r.Put("/{userId}", Update)
+	r.Delete("/{userId}", Delete)
 
 	return r
 }
@@ -122,4 +123,19 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(output)
+}
+
+func Delete(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var userId = chi.URLParam(r, "userId")
+	var err = db.Session.DB("users").C(models.CollectionUser).RemoveId(bson.ObjectIdHex(userId))
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("\"success\": false"))
+		return
+	}
+
+	w.Write([]byte("{\"success\": true}"))
 }
