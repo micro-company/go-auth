@@ -156,11 +156,14 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var userId = chi.URLParam(r, "userId")
-	var err = db.Session.DB("users").C(models.CollectionUser).RemoveId(bson.ObjectIdHex(userId))
-	if err != nil {
-		Error(w, err)
-		return
-	}
+	defer func() {
+		var err = db.Session.DB("users").C(models.CollectionUser).RemoveId(bson.ObjectIdHex(userId))
+		if err != nil {
+			Error(w, err)
+			return
+		}
+		recover()
+	}()
 
 	w.Write([]byte("{\"success\": true}"))
 }
