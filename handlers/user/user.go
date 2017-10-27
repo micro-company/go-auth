@@ -27,11 +27,11 @@ func Error(w http.ResponseWriter, err error) {
 	return
 }
 
-func CheckUniqueUser(w http.ResponseWriter, user models.User) {
+func CheckUniqueUser(w http.ResponseWriter, user models.User) bool {
 	count, err := db.Session.DB("users").C(models.CollectionUser).Find(bson.M{"mail": user.Mail}).Count()
 	if err != nil {
 		Error(w, err)
-		return
+		return true
 	}
 
 	if (count > 0) {
@@ -42,8 +42,11 @@ func CheckUniqueUser(w http.ResponseWriter, user models.User) {
 				"need unique mail"
 			]
 		}`))
-		return
+		Error(w, err)
+		return true
 	}
+
+	return false
 }
 
 // Routes creates a REST router
@@ -93,7 +96,8 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	CheckUniqueUser(w, user)
+	is_err := CheckUniqueUser(w, user)
+	if is_err { return }
 
 	id := bson.NewObjectId()
 	user.Id = id
