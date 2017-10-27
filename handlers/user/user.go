@@ -11,19 +11,23 @@ import (
 	"io/ioutil"
 	"github.com/batazor/go-auth/utils"
 	"time"
+	"errors"
 )
 
 var log = logrus.New()
 
-type error interface {
-	Error() string
-}
-
 // Error handler
 func Error(w http.ResponseWriter, err error) {
-	log.Error(err)
 	w.WriteHeader(http.StatusBadRequest)
-	w.Write([]byte("{\"success\": false}"))
+
+	err_str := `{
+		"success": false,
+		"error": [
+			'` + err.Error()  + `'
+		]
+	}`
+
+	w.Write([]byte(err_str))
 	return
 }
 
@@ -36,13 +40,7 @@ func CheckUniqueUser(w http.ResponseWriter, user models.User) bool {
 
 	if (count > 0) {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{
-			"success": false,
-			"error": [
-				"need unique mail"
-			]
-		}`))
-		Error(w, err)
+		Error(w, errors.New("need unique mail"))
 		return true
 	}
 
@@ -73,7 +71,7 @@ func List(w http.ResponseWriter, r *http.Request) {
 
 	res, err := json.Marshal(&users)
 	if err != nil {
-		log.Fatal(err)
+		Error(w, err)
 	}
 
 	w.Write(res)
@@ -138,6 +136,11 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var userId = chi.URLParam(r, "userId")
+	if len(userId) != 24 {
+		Error(w, errors.New("not correct user id"))
+		return
+	}
+
 	user.Password, _ = utils.HashPassword(user.Password)
 	user.UpdatedAt = time.Now()
 
