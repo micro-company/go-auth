@@ -36,7 +36,7 @@ func main() {
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
+	r.Use(utils.NewStructuredLogger(log))
 	r.Use(middleware.Recoverer)
 
 	r.Mount("/users", user.Routes())
@@ -46,3 +46,4 @@ func main() {
 	log.Info("Run services on port " + PORT)
 	http.ListenAndServe(":"+PORT, r)
 }
+
