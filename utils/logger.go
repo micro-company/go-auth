@@ -8,6 +8,32 @@ import (
 	"time"
 )
 
+var log = logrus.New()
+
+func init() {
+	// Logging =================================================================
+	// Setup the logger backend using Sirupsen/logrus and configure
+	// it to use a custom JSONFormatter. See the logrus docs for how to
+	// configure the backend at github.com/Sirupsen/logrus
+	log.Formatter = new(logrus.JSONFormatter)
+}
+
+// Error handler
+func Error(w http.ResponseWriter, err error) {
+	w.WriteHeader(http.StatusBadRequest)
+	log.Error(err)
+
+	err_str := `{
+		"success": false,
+		"error": [
+			'` + err.Error() + `'
+		]
+	}`
+
+	w.Write([]byte(err_str))
+	return
+}
+
 // StructuredLogger is a simple, but powerful implementation of a custom structured
 // logger backed on logrus. I encourage users to copy it, adapt it and make it their
 // own. Also take a look at https://github.com/pressly/lg for a dedicated pkg based
