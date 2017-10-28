@@ -1,18 +1,12 @@
-FROM golang:1.9.1-alpine as builder
+FROM golang:1.9.2-alpine as builder
 
-ENV GLIDE_VERSION v0.13.0
-
-# Install glide
-RUN apk add --update ca-certificates wget git && \
-    update-ca-certificates && \
-    wget https://github.com/Masterminds/glide/releases/download/${GLIDE_VERSION}/glide-${GLIDE_VERSION}-linux-amd64.tar.gz && \
-    tar -zxf glide-${GLIDE_VERSION}-linux-amd64.tar.gz && \
-    mv linux-amd64/glide /usr/local/bin/
+# Install dep
+RUN go get -u github.com/golang/dep/cmd/dep
 
 # Build project
 WORKDIR /go/src/github.com/batazor/go-bookmarks
 COPY . .
-RUN glide install
+RUN dep ensure
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
 
 FROM alpine:latest

@@ -1,0 +1,21 @@
+[[constraint]]
+  name = "github.com/dgrijalva/jwt-go"
+  version = "3.0.0"
+
+[[constraint]]
+  name = "github.com/go-chi/chi"
+  version = "3.3.0"
+
+[[constraint]]
+  name = "github.com/go-chi/render"
+  version = "1.0.0"
+
+[[constraint]]
+  name = "github.com/sirupsen/logrus"
+  version = "1.0.3"
+
+[[constraint]]
+  name = "golang.org/x/crypto"
+
+[[constraint]]
+  name = "gopkg.in/mgo.v2"
