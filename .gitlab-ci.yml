@@ -1,7 +1,7 @@
 image: golang:1.9.2-alpine
 
 variables:
-  REPO_NAME: gitlab.com/micro-company/go-auth
+  REPO_NAME: github.com/batazor/go-auth
 
 before_script:
   - mkdir -p $GOPATH/src/$REPO_NAME
@@ -16,6 +16,7 @@ stages:
 dep:
     stage: dep
     script:
+      - apk add --no-cache git
       - go get -u github.com/golang/dep/cmd/dep
       - dep ensure
     only:
