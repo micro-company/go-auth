@@ -1,24 +1,24 @@
 package jwt
 
 import (
-	"github.com/dgrijalva/jwt-go"
-	"github.com/go-chi/chi"
-	"github.com/sirupsen/logrus"
-	"net/http"
-	"io/ioutil"
 	"crypto/rsa"
 	"encoding/json"
 	"github.com/batazor/go-auth/models"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/go-chi/chi"
+	"github.com/sirupsen/logrus"
+	"io/ioutil"
+	"net/http"
 	"time"
 )
 
 const (
 	PRIVATE_KEY = "cert/private_key.pem"
-	PUBLIC_KEY = "cert/public_key.pub"
+	PUBLIC_KEY  = "cert/public_key.pub"
 )
 
 var (
-	log       = logrus.New()
+	log = logrus.New()
 
 	verifyKey *rsa.PublicKey
 	signKey   *rsa.PrivateKey

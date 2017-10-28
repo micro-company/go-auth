@@ -1,16 +1,16 @@
 package db
 
 import (
+	"github.com/batazor/go-auth/utils"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
-	"github.com/batazor/go-auth/utils"
 )
 
 var (
 	log = logrus.New()
 
 	Session *mgo.Session
-	Mongo *mgo.DialInfo
+	Mongo   *mgo.DialInfo
 )
 
 func init() {
