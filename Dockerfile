@@ -16,5 +16,5 @@ RUN addgroup -S 997 && adduser -S -g 997 997
 USER 997
 
 WORKDIR /app/
-COPY --from=builder /go/src/github.com/batazor/go-bookmarks/app .
+COPY --from=builder /go/src/github.com/batazor/go-auth/app .
 CMD ["./app"]
