@@ -1,11 +1,11 @@
 package utils
 
 import (
+	"fmt"
+	"github.com/go-chi/chi/middleware"
 	"github.com/sirupsen/logrus"
 	"net/http"
-	"github.com/go-chi/chi/middleware"
 	"time"
-	"fmt"
 )
 
 // StructuredLogger is a simple, but powerful implementation of a custom structured
@@ -13,12 +13,12 @@ import (
 // own. Also take a look at https://github.com/pressly/lg for a dedicated pkg based
 // on this work, designed for context-based http routers.
 
-func NewStructuredLogger(logger *logrus.Logger) func(next http.Handler) http.Handler {
-	return middleware.RequestLogger(&StructuredLogger{logger})
-}
-
 type StructuredLogger struct {
 	Logger *logrus.Logger
+}
+
+func NewStructuredLogger(logger *logrus.Logger) func(next http.Handler) http.Handler {
+	return middleware.RequestLogger(&StructuredLogger{logger})
 }
 
 func (l *StructuredLogger) NewLogEntry(r *http.Request) middleware.LogEntry {
