@@ -38,8 +38,3 @@ openssl rsa \
 
 * Go
 * MongoDB
-
-#### Library
-
-+ [chi](github.com/pressly/chi) - for routing
-+ [glide](github.com/Masterminds/glide) - for vendoring
