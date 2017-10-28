@@ -1,0 +1,51 @@
+image: golang:1.9.2-alpine
+
+variables:
+  REPO_NAME: github.com/batazor/go-auth
+
+before_script:
+  - mkdir -p $GOPATH/src/$REPO_NAME
+  - ln -svf $CI_PROJECT_DIR/* $GOPATH/src/$REPO_NAME
+  - cd $GOPATH/src/$REPO_NAME
+
+stages:
+    - dep
+    - test
+    - build
+
+dep:
+    stage: dep
+    script:
+      - apk add --no-cache git
+      - go get -u github.com/golang/dep/cmd/dep
+      - dep ensure
+    only:
+      - /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.?(?:0|[1-9]\d*)?$/
+    except:
+      - branches
+
+
+format:
+    stage: test
+    script:
+      - go fmt $(go list ./... | grep -v /vendor/)
+      - go vet $(go list ./... | grep -v /vendor/)
+      - go test -race $(go list ./... | grep -v /vendor/)
+    only:
+      - /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.?(?:0|[1-9]\d*)?$/
+    except:
+      - branches
+
+compile:
+    stage: build
+    script:
+      - CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
+      - docker build -t registry.gitlab.com/micro-company/go-auth .
+      - docker push registry.gitlab.com/micro-company/go-auth
+      - docker build -t registry.gitlab.com/micro-company/go-auth:$CI_COMMIT_TAG .
+      - docker push registry.gitlab.com/micro-company/go-auth:$CI_COMMIT_TAG
+    only:
+      - /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.?(?:0|[1-9]\d*)?$/
+    except:
+      - branches
+
