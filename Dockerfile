@@ -1,7 +1,8 @@
 FROM golang:1.9.2-alpine as builder
 
 # Install dep
-RUN go get -u github.com/golang/dep/cmd/dep
+RUN apk add --update ca-certificates git && \
+    go get -u github.com/golang/dep/cmd/dep
 
 # Build project
 WORKDIR /go/src/github.com/batazor/go-auth
