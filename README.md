@@ -1,7 +1,7 @@
 # go-auth-server
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/32dbb31cde6ea8f52cf0/maintainability)](https://codeclimate.com/github/batazor/go-auth/maintainability)
-[![Docker Build Statu](https://img.shields.io/docker/build/jrottenberg/ffmpeg.svg?style=flat-square)](https://hub.docker.com/r/batazor/go-auth)
+[![](https://images.microbadger.com/badges/image/batazor/go-auth.svg)](https://microbadger.com/images/batazor/go-auth "Get your own image badge on microbadger.com")
 
 Auth micro-service
 
