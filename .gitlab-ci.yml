@@ -39,7 +39,6 @@ format:
 compile:
     stage: build
     script:
-      - CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
       - docker build -t registry.gitlab.com/micro-company/go-auth .
       - docker push registry.gitlab.com/micro-company/go-auth
       - docker build -t registry.gitlab.com/micro-company/go-auth:$CI_COMMIT_TAG .
