@@ -7,6 +7,7 @@ import (
 	"github.com/batazor/go-auth/models"
 	"github.com/batazor/go-auth/utils"
 	"github.com/go-chi/chi"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
@@ -39,6 +40,9 @@ func Routes() chi.Router {
 func List(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	parent := opentracing.GlobalTracer().StartSpan("GET /users")
+	defer parent.Finish()
+
 	users := []models.User{}
 	err := db.Session.DB("users").C(models.CollectionUser).Find(nil).Sort("-updated_on").All(&users)
 	if err != nil {
@@ -56,6 +60,9 @@ func List(w http.ResponseWriter, r *http.Request) {
 
 func Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	parent := opentracing.GlobalTracer().StartSpan("POST /users")
+	defer parent.Finish()
 
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -101,6 +108,9 @@ func Create(w http.ResponseWriter, r *http.Request) {
 func Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	parent := opentracing.GlobalTracer().StartSpan("PUT /users")
+	defer parent.Finish()
+
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -141,6 +151,9 @@ func Update(w http.ResponseWriter, r *http.Request) {
 
 func Delete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+	parent := opentracing.GlobalTracer().StartSpan("DELETE /users")
+	defer parent.Finish()
 
 	var userId = chi.URLParam(r, "userId")
 	defer func() {

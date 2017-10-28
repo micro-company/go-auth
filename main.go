@@ -8,8 +8,12 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
+	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
+	"github.com/uber/jaeger-client-go"
+	"github.com/uber/jaeger-client-go/config"
 	"net/http"
+	"time"
 )
 
 var log = logrus.New()
@@ -27,8 +31,27 @@ func init() {
 
 func main() {
 
-	// Get configuration ======================================================
+	// Get configuration =======================================================
 	PORT := utils.Getenv("PORT", "4070")
+
+	// OpenTracing =============================================================
+	cfg := config.Configuration{
+		Sampler: &config.SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		Reporter: &config.ReporterConfig{
+			LogSpans:            true,
+			BufferFlushInterval: 1 * time.Second,
+			LocalAgentHostPort:  "localhost:5775",
+		},
+	}
+	tracer, closer, _ := cfg.New(
+		"go-auth",
+		config.Logger(jaeger.StdLogger),
+	)
+	opentracing.SetGlobalTracer(tracer)
+	defer closer.Close()
 
 	// Routes ==================================================================
 	r := chi.NewRouter()
