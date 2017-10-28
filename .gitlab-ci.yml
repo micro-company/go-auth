@@ -7,23 +7,13 @@ before_script:
   - mkdir -p $GOPATH/src/$REPO_NAME
   - ln -svf $CI_PROJECT_DIR/* $GOPATH/src/$REPO_NAME
   - cd $GOPATH/src/$REPO_NAME
+  - apk add --no-cache git gcc
+  - go get -u github.com/golang/dep/cmd/dep
+  - dep ensure
 
 stages:
-    - dep
     - test
     - build
-
-dep:
-    stage: dep
-    script:
-      - apk add --no-cache git gcc
-      - go get -u github.com/golang/dep/cmd/dep
-      - dep ensure
-    only:
-      - /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.?(?:0|[1-9]\d*)?$/
-    except:
-      - branches
-
 
 format:
     stage: test
