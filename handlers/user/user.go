@@ -3,8 +3,6 @@ package user
 import (
 	"encoding/json"
 	"errors"
-	"github.com/batazor/go-auth/db"
-	"github.com/batazor/go-auth/models"
 	"github.com/batazor/go-auth/utils"
 	"github.com/go-chi/chi"
 	"github.com/opentracing/opentracing-go"
@@ -13,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+	"github.com/batazor/go-auth/models/user"
 )
 
 var log = logrus.New()
@@ -43,8 +42,7 @@ func List(w http.ResponseWriter, r *http.Request) {
 	parent := opentracing.GlobalTracer().StartSpan("GET /users")
 	defer parent.Finish()
 
-	users := []models.User{}
-	err := db.Session.DB("users").C(models.CollectionUser).Find(nil).Sort("-updated_on").All(&users)
+	err, users := userModel.List()
 	if err != nil {
 		utils.Error(w, err)
 		return
@@ -71,7 +69,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user models.User
+	var user userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		utils.Error(w, err)
@@ -89,7 +87,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
-	err = db.Session.DB("users").C(models.CollectionUser).Insert(user)
+	err, user = userModel.Add(user)
 	if err != nil {
 		utils.Error(w, err)
 		return
@@ -118,7 +116,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user models.User
+	var user userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		utils.Error(w, err)
@@ -131,10 +129,11 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user.Id = bson.ObjectIdHex(userId)
 	user.Password, _ = utils.HashPassword(user.Password)
 	user.UpdatedAt = time.Now()
 
-	err = db.Session.DB("users").C(models.CollectionUser).UpdateId(bson.ObjectIdHex(userId), user)
+	err, user = userModel.Update(user)
 	if err != nil {
 		utils.Error(w, err)
 		return
@@ -156,13 +155,11 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	defer parent.Finish()
 
 	var userId = chi.URLParam(r, "userId")
-	defer func() {
-		var err = db.Session.DB("users").C(models.CollectionUser).RemoveId(bson.ObjectIdHex(userId))
-		if err != nil {
-			utils.Error(w, err)
-			return
-		}
+	err := userModel.Delete(userId)
+	if err != nil {
+		utils.Error(w, err)
+		return
+	}
 
-		w.Write([]byte(`{"success": true}`))
-	}()
+	w.Write([]byte(`{"success": true}`))
 }

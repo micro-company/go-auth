@@ -3,13 +3,15 @@ package jwt
 import (
 	"crypto/rsa"
 	"encoding/json"
-	"github.com/batazor/go-auth/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/chi"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"time"
+	"errors"
+	"github.com/batazor/go-auth/models/user"
+	"github.com/batazor/go-auth/utils"
 )
 
 const (
@@ -24,12 +26,14 @@ var (
 	signKey   *rsa.PrivateKey
 )
 
-type UserCredentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
+func init() {
+	// Logging =================================================================
+	// Setup the logger backend using Sirupsen/logrus and configure
+	// it to use a custom JSONFormatter. See the logrus docs for how to
+	// configure the backend at github.com/Sirupsen/logrus
+	log.Formatter = new(logrus.JSONFormatter)
 
-func initCert() {
+	// JWT =====================================================================
 	signBytes, err := ioutil.ReadFile(PRIVATE_KEY)
 	if err != nil {
 		log.Fatal(err)
@@ -57,8 +61,6 @@ func initCert() {
 
 // Routes creates a REST router
 func Routes() chi.Router {
-	initCert()
-
 	r := chi.NewRouter()
 
 	r.Get("/debug/:token", Debug)
@@ -73,19 +75,33 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		log.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("{\"success\": false}"))
+		utils.Error(w, err)
 		return
 	}
 
-	var user models.User
+	var user userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("{\"success\": false}"))
+		utils.Error(w, err)
 		return
 	}
+
+	err, user = userModel.FindOne(user)
+	if err != nil {
+		utils.Error(w, errors.New("incorrect mail or password"))
+		return
+	}
+
+	// TODO: get a hash pass
+	//isErr := utils.CheckPasswordHash(originalUser.Password, user.Password)
+	//if isErr {
+	//	utils.Error(w, errors.New("incorrect mail or pass"))
+	//	return
+	//}
+
+	// TODO: Get JWT
+	// TODO: Create extend-token
+	// TODO: Return JWT token and extend token as HTTP-headers
 
 	// Create JWT token
 	token := jwt.New(jwt.SigningMethodRS256)
@@ -96,8 +112,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	tokenString, err := token.SignedString(signKey)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("{\"success\": false}"))
+		utils.Error(w, err)
 		return
 	}
 
