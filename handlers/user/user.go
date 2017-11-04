@@ -31,7 +31,7 @@ func Routes() chi.Router {
 
 	r.Get("/", List)
 	r.Post("/", Create)
-	r.Put("/{userId}", Update)
+	r.Patch("/{userId}", Update)
 	r.Delete("/{userId}", Delete)
 
 	return r
