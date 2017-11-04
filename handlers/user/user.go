@@ -3,15 +3,16 @@ package user
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"net/http"
+	"time"
+
+	"github.com/batazor/go-auth/models/user"
 	"github.com/batazor/go-auth/utils"
 	"github.com/go-chi/chi"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
-	"io/ioutil"
-	"net/http"
-	"time"
-	"github.com/batazor/go-auth/models/user"
 )
 
 var log = logrus.New()

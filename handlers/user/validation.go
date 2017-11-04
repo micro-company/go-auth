@@ -2,11 +2,12 @@ package user
 
 import (
 	"errors"
+	"net/http"
+
 	"github.com/batazor/go-auth/db"
+	"github.com/batazor/go-auth/models/user"
 	"github.com/batazor/go-auth/utils"
 	"gopkg.in/mgo.v2/bson"
-	"net/http"
-	"github.com/batazor/go-auth/models/user"
 )
 
 func CheckUniqueUser(w http.ResponseWriter, user userModel.User) bool {

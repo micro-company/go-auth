@@ -2,10 +2,11 @@ package utils
 
 import (
 	"fmt"
-	"github.com/go-chi/chi/middleware"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
+
+	"github.com/go-chi/chi/middleware"
+	"github.com/sirupsen/logrus"
 )
 
 var log = logrus.New()
@@ -26,7 +27,7 @@ func Error(w http.ResponseWriter, err error) {
 	err_str := `{
 		"success": false,
 		"error": [
-			'` + err.Error() + `'
+			"` + err.Error() + `"
 		]
 	}`
 

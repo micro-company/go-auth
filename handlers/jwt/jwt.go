@@ -3,15 +3,16 @@ package jwt
 import (
 	"crypto/rsa"
 	"encoding/json"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/go-chi/chi"
-	"github.com/sirupsen/logrus"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"time"
-	"errors"
+
 	"github.com/batazor/go-auth/models/user"
 	"github.com/batazor/go-auth/utils"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/go-chi/chi"
+	"github.com/sirupsen/logrus"
 )
 
 const (

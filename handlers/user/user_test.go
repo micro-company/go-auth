@@ -3,12 +3,13 @@ package user
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/batazor/go-auth/db"
-	"github.com/go-chi/chi"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/batazor/go-auth/db"
 	"github.com/batazor/go-auth/models/user"
+	"github.com/go-chi/chi"
 )
 
 var (

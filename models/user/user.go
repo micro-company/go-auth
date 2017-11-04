@@ -1,9 +1,10 @@
 package userModel
 
 import (
-	"gopkg.in/mgo.v2/bson"
 	"time"
+
 	"github.com/batazor/go-auth/db"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -21,7 +22,7 @@ type User struct {
 }
 
 func List() (error, []User) {
-	users := []User{}
+	var users []User
 	err := db.Session.DB("users").C(CollectionUser).Find(nil).Sort("-updated_on").All(&users)
 	if err != nil {
 		return err, users
@@ -31,7 +32,7 @@ func List() (error, []User) {
 }
 
 func Find(user User) (error, []User) {
-	users := []User{}
+	var users []User
 	err := db.Session.DB("users").C(CollectionUser).Find(user).Sort("-updated_on").All(&users)
 	if err != nil {
 		return err, users
