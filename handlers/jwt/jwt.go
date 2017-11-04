@@ -87,22 +87,20 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err, user = userModel.FindOne(user)
+	var passwordUser = user.Password
+	var searchUser = userModel.User{}
+	searchUser.Mail = user.Mail
+	err, user = userModel.FindOne(searchUser)
 	if err != nil {
 		utils.Error(w, errors.New("incorrect mail or password"))
 		return
 	}
 
-	// TODO: get a hash pass
-	//isErr := utils.CheckPasswordHash(originalUser.Password, user.Password)
-	//if isErr {
-	//	utils.Error(w, errors.New("incorrect mail or pass"))
-	//	return
-	//}
-
-	// TODO: Get JWT
-	// TODO: Create extend-token
-	// TODO: Return JWT token and extend token as HTTP-headers
+	isErr := utils.CheckPasswordHash(passwordUser, user.Password)
+	if !isErr {
+		utils.Error(w, errors.New("incorrect mail or pass"))
+		return
+	}
 
 	// Create JWT token
 	token := jwt.New(jwt.SigningMethodRS256)
@@ -118,7 +116,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte(tokenString))
+	w.Header().Set("Authorization", "Bearer "+tokenString)
+	w.Write([]byte("{\"success\": true}"))
 	return
 }
 
