@@ -2,15 +2,16 @@ package user
 
 import (
 	"errors"
+	"net/http"
+
 	"github.com/batazor/go-auth/db"
-	"github.com/batazor/go-auth/models"
+	"github.com/batazor/go-auth/models/user"
 	"github.com/batazor/go-auth/utils"
 	"gopkg.in/mgo.v2/bson"
-	"net/http"
 )
 
-func CheckUniqueUser(w http.ResponseWriter, user models.User) bool {
-	count, err := db.Session.DB("users").C(models.CollectionUser).Find(bson.M{"mail": user.Mail}).Count()
+func CheckUniqueUser(w http.ResponseWriter, user userModel.User) bool {
+	count, err := db.Session.DB("users").C(userModel.CollectionUser).Find(bson.M{"mail": user.Mail}).Count()
 	if err != nil {
 		utils.Error(w, err)
 		return true

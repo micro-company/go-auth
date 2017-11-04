@@ -3,15 +3,16 @@ package user
 import (
 	"encoding/json"
 	"errors"
-	"github.com/batazor/go-auth/db"
-	"github.com/batazor/go-auth/models"
-	"github.com/batazor/go-auth/utils"
-	"github.com/go-chi/chi"
-	"github.com/sirupsen/logrus"
-	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/batazor/go-auth/models/user"
+	"github.com/batazor/go-auth/utils"
+	"github.com/go-chi/chi"
+	"github.com/opentracing/opentracing-go"
+	"github.com/sirupsen/logrus"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var log = logrus.New()
@@ -30,7 +31,7 @@ func Routes() chi.Router {
 
 	r.Get("/", List)
 	r.Post("/", Create)
-	r.Put("/{userId}", Update)
+	r.Patch("/{userId}", Update)
 	r.Delete("/{userId}", Delete)
 
 	return r
@@ -39,8 +40,10 @@ func Routes() chi.Router {
 func List(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	users := []models.User{}
-	err := db.Session.DB("users").C(models.CollectionUser).Find(nil).Sort("-updated_on").All(&users)
+	parent := opentracing.GlobalTracer().StartSpan("GET /users")
+	defer parent.Finish()
+
+	err, users := userModel.List()
 	if err != nil {
 		utils.Error(w, err)
 		return
@@ -57,6 +60,9 @@ func List(w http.ResponseWriter, r *http.Request) {
 func Create(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	parent := opentracing.GlobalTracer().StartSpan("POST /users")
+	defer parent.Finish()
+
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -64,7 +70,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user models.User
+	var user userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		utils.Error(w, err)
@@ -82,7 +88,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
-	err = db.Session.DB("users").C(models.CollectionUser).Insert(user)
+	err, user = userModel.Add(user)
 	if err != nil {
 		utils.Error(w, err)
 		return
@@ -101,6 +107,9 @@ func Create(w http.ResponseWriter, r *http.Request) {
 func Update(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	parent := opentracing.GlobalTracer().StartSpan("PUT /users")
+	defer parent.Finish()
+
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
@@ -108,7 +117,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user models.User
+	var user userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		utils.Error(w, err)
@@ -121,10 +130,11 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user.Id = bson.ObjectIdHex(userId)
 	user.Password, _ = utils.HashPassword(user.Password)
 	user.UpdatedAt = time.Now()
 
-	err = db.Session.DB("users").C(models.CollectionUser).UpdateId(bson.ObjectIdHex(userId), user)
+	err, user = userModel.Update(user)
 	if err != nil {
 		utils.Error(w, err)
 		return
@@ -142,14 +152,15 @@ func Update(w http.ResponseWriter, r *http.Request) {
 func Delete(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var userId = chi.URLParam(r, "userId")
-	defer func() {
-		var err = db.Session.DB("users").C(models.CollectionUser).RemoveId(bson.ObjectIdHex(userId))
-		if err != nil {
-			utils.Error(w, err)
-			return
-		}
+	parent := opentracing.GlobalTracer().StartSpan("DELETE /users")
+	defer parent.Finish()
 
-		w.Write([]byte(`{"success": true}`))
-	}()
+	var userId = chi.URLParam(r, "userId")
+	err := userModel.Delete(userId)
+	if err != nil {
+		utils.Error(w, err)
+		return
+	}
+
+	w.Write([]byte(`{"success": true}`))
 }

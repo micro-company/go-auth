@@ -3,13 +3,16 @@ package jwt
 import (
 	"crypto/rsa"
 	"encoding/json"
-	"github.com/batazor/go-auth/models"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/go-chi/chi"
-	"github.com/sirupsen/logrus"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/batazor/go-auth/models/user"
+	"github.com/batazor/go-auth/utils"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/go-chi/chi"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -24,12 +27,14 @@ var (
 	signKey   *rsa.PrivateKey
 )
 
-type UserCredentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
+func init() {
+	// Logging =================================================================
+	// Setup the logger backend using Sirupsen/logrus and configure
+	// it to use a custom JSONFormatter. See the logrus docs for how to
+	// configure the backend at github.com/Sirupsen/logrus
+	log.Formatter = new(logrus.JSONFormatter)
 
-func initCert() {
+	// JWT =====================================================================
 	signBytes, err := ioutil.ReadFile(PRIVATE_KEY)
 	if err != nil {
 		log.Fatal(err)
@@ -57,8 +62,6 @@ func initCert() {
 
 // Routes creates a REST router
 func Routes() chi.Router {
-	initCert()
-
 	r := chi.NewRouter()
 
 	r.Get("/debug/:token", Debug)
@@ -73,17 +76,29 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		log.Error(err)
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("{\"success\": false}"))
+		utils.Error(w, err)
 		return
 	}
 
-	var user models.User
+	var user userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("{\"success\": false}"))
+		utils.Error(w, err)
+		return
+	}
+
+	var passwordUser = user.Password
+	var searchUser = userModel.User{}
+	searchUser.Mail = user.Mail
+	err, user = userModel.FindOne(searchUser)
+	if err != nil {
+		utils.Error(w, errors.New("incorrect mail or password"))
+		return
+	}
+
+	isErr := utils.CheckPasswordHash(passwordUser, user.Password)
+	if !isErr {
+		utils.Error(w, errors.New("incorrect mail or pass"))
 		return
 	}
 
@@ -96,13 +111,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	tokenString, err := token.SignedString(signKey)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("{\"success\": false}"))
+		utils.Error(w, err)
 		return
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte(tokenString))
+	w.Header().Set("Authorization", "Bearer "+tokenString)
+	w.Write([]byte("{\"success\": true}"))
 	return
 }
 

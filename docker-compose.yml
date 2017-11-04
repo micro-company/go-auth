@@ -7,17 +7,26 @@ services:
     container_name: mongo
     restart: always
     volumes:
-    - ./ops/mongo.conf:/etc/mongo.conf
     - /data/go-auth/mongodb:/data/db
 
-  api:
+  auth:
     build: .
-    container_name: api
+    container_name: auth
     restart: always
     environment:
       PORT: 4070
       MONGO_URL: mongo/auth
-    ports:
-    - "4070:4070"
+#    ports:
+#    - "4070:4070"
     depends_on:
     - mongo
+    volumes:
+    - ./cert:/app/cert
+
+  opentracing:
+    image: jaegertracing/all-in-one:0.9.0
+    container_name: opentracing
+    restart: always
+    ports:
+    - "5775:5775/udp"
+    - "16686:16686"
