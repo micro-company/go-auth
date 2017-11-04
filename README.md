@@ -5,6 +5,8 @@
 
 Auth micro-service
 
+![Schema auth-service](docs/schema.png)
+
 ### RUN
 
 ```
