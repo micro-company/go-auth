@@ -26,6 +26,12 @@
   version = "v3.3.0"
 
 [[projects]]
+  name = "github.com/go-chi/cors"
+  packages = ["."]
+  revision = "dba6525398619dead495962a916728e7ee2ca322"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/go-chi/render"
   packages = ["."]
   revision = "9f855fadd4b8cde7773f9ef51f6b2705af239519"
@@ -45,7 +51,7 @@
 
 [[projects]]
   name = "github.com/uber/jaeger-client-go"
-  packages = [".","internal/spanlog","log","thrift-gen/agent","thrift-gen/jaeger","thrift-gen/sampling","thrift-gen/zipkincore","utils"]
+  packages = [".","config","internal/spanlog","log","rpcmetrics","thrift-gen/agent","thrift-gen/jaeger","thrift-gen/sampling","thrift-gen/zipkincore","utils"]
   revision = "3e3870040def0ebdaf65a003863fa64f5cb26139"
   version = "v2.9.0"
 
@@ -82,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7f5e9ceb00a3f7bb06e6e2c334a9d1a958ed0886d48e52f7b0398fe0a4479a33"
+  inputs-digest = "42fa0394f5662683d0ad05ff757f7298ee6d282b1df30be6ac121ed25b637de3"
   solver-name = "gps-cdcl"
   solver-version = 1

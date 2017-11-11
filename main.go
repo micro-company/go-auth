@@ -1,19 +1,21 @@
 package main
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/batazor/go-auth/db"
-	"github.com/batazor/go-auth/handlers/jwt"
+	"github.com/batazor/go-auth/handlers/session"
 	"github.com/batazor/go-auth/handlers/user"
 	"github.com/batazor/go-auth/utils"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
-	"net/http"
-	"time"
 )
 
 var log = logrus.New()
@@ -56,6 +58,17 @@ func main() {
 	// Routes ==================================================================
 	r := chi.NewRouter()
 
+	// CORS ====================================================================
+	cors := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	})
+
+	r.Use(cors.Handler)
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -64,7 +77,7 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	r.Mount("/users", user.Routes())
-	r.Mount("/jwt", jwt.Routes())
+	r.Mount("/auth", session.Routes())
 
 	// start HTTP-server
 	log.Info("Run services on port " + PORT)
