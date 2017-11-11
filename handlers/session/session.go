@@ -92,13 +92,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	searchUser.Mail = user.Mail
 	err, user = userModel.FindOne(searchUser)
 	if err != nil {
-		utils.Error(w, errors.New("incorrect mail or password"))
+		utils.Error(w, errors.New(`{"mail":"incorrect mail or password"}`))
 		return
 	}
 
 	isErr := utils.CheckPasswordHash(passwordUser, user.Password)
 	if !isErr {
-		utils.Error(w, errors.New("incorrect mail or pass"))
+		utils.Error(w, errors.New(`{"mail":"incorrect mail or password"}`))
 		return
 	}
 
