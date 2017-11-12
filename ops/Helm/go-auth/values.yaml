@@ -1,0 +1,103 @@
+# Default values for go-auth.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+server:
+  replicaCount: 1
+  # annotations:
+  #   metrics: true
+  terminationGracePeriodSeconds: 30
+  image:
+    repository: batazor/go-auth
+    tag: latest
+    ## Global imagePullPolicy
+    ## Default: 'Always' if image tag is 'latest', else 'IfNotPresent'
+    ## Ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+    imagePullPolicy: IfNotPresent
+  env:
+    AUTH_PORT: 4070
+    AUTH_MONGO_URL: "mongodb/auth"
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+  nodeSelector: {}
+service:
+  name: auth
+  type: ClusterIP
+  externalPort: 80
+  internalPort: 4070
+  ## nodePort port number
+  ## Is not required, but allows for static port assignment with
+  ## serviceType NodePort.
+  ## Default: nil
+  # nodePort: 30000
+ingress:
+  enabled: false
+  hosts:
+  - auth.example.com
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+  ## Ingress TLS configuration
+  ## Secrets must be manually created in the namespace
+  tls:
+    # Secrets must be manually created in the namespace.
+    # - secretName: chart-example-tls
+    #   hosts:
+    #     - chart-example.local
+serverConfigFile:
+  private_key.pem: |
+    -----BEGIN RSA PRIVATE KEY-----
+    MIIEpAIBAAKCAQEAsodj5uX/ggl/46nQO5XjqG6ANVzX22jP0WO0Cic4qP4zot0G
+    RHlmlEdT2qYayFaodUedC/dhWTGgcR7G2gjMFUzGcti9YnFgSgo49sorU+AnoOsQ
+    P6rwS/W1nAdFlKSvQuU3ON1CJRfeR/4weEk0WYA3n/QttfI4X+3JoGfsqmCQ5RWH
+    j0NzDjn2MSJZSS6/NmhlHpZvP+37EJ5VGwiwdb49i0/xdtog6Om8LSvCLvm4VvkJ
+    /wQmmmf22R+H5skqJmYzNVANuqZcTLVLu5akRSvTzN3yPx7bVPgxCTi0m9Vr/phB
+    RpG+UScskuNA39UoGQnQLKDo76QsVruX8u9tOwIDAQABAoIBABr6CGeIk55jrxaI
+    v3VxhdAaunbVy6xU3ypFxZvPJ2mp18WhXmQUcCKx0IL2nI9vQM9P/fQj8mrW6+aL
+    /wJNWAFT85zBEYUBmso1Vzw7emaXNYXEX1UvkFX6D/I+yw3WAMG7/ycxj+ApBiac
+    y1gxv55SmJUsAYg/zLL6LIB3k7R+2FKFvDk2BdszJ3bKLH4djf+DTuoCTrZjYtrs
+    DUlkCzSq0qfRN7tozckxgh4010wKsaeRz1XaqU5KQrcqBEOfKa6MI14mpK8ClZ28
+    nK3aCZ/5RBqqrk8+rB3AKnBI3lff1HoPiawLwZw9UDzo92Xi5rS14YUFVtBHvded
+    T3ySpZkCgYEA4ZQXVtvI9sJ6NCq06CQLCqh6ZWxDIvA+Uwmx7VxjK/1/FF99c9k7
+    ner6K7FKhT/X3N201YEp6B7ngXUuS2OoaaCco8dSGFuYd9ePOw3USX3YG7l+Y9gK
+    KGAWatJbKqLJ6M6ArqqrqMxGh0qPxdEf8yN1Bk7XEYjpPJQ9DxwKEzcCgYEAyprz
+    UErGy5MLj54abYtaJN/KhUJcLA6x34vm8gJKGAHmt5EBXqf4sy2E+UOubaPUSXzZ
+    ASKFmsVXvlSKzfvXBJG8K/luQigxKZmeQqmASyobBr3C2YBCjIgLAFdM1ghK3RLh
+    Xt3VPP5GTea1V/tWgBDWrRjV0IjqmiigbBiuwB0CgYAXyMOFNvtDeVHlOjOE3ngD
+    kawGEZoqjuYjXzxRaJJUSxAhF8hkdJ0ik2n5PWI8FnUuJnowoMPIY6nJLo/JByL0
+    sCiT5Co1w0KaMDI76cNeVFR65935rQe1Jhx2+uL95dggIdXTlM8wpwkwrp3mH5yc
+    yDpIhfuLL8JXztF5TF2LlQKBgQCBkDGE6SzTxocgIqUX5IOTDSH/sf4rloIdSOQ5
+    Y0lqrNyUC0Dq/VPHkZZ1qNiE+L2q+RH07dSuswB3kKzrKN/J5kCFho8B853s0nYo
+    fyix6I079GIEoUbtg5o1b56NSORHF+nTttzEkn73FlBloS8h2qLOMxGYt9X/G3fr
+    aKVn6QKBgQDgPREIE+7eQuSTar19G+l1kykiSjLrW3BrS7AKnpv300BjEfjdCCO9
+    h988AoevcmVrbRfmX5apQlGE99LA15edN4GyathfLLoj+gimxr5/B915Op9yLJ8Y
+    Blrfvy5UtxAsa+Hh9lagNcKxB4iOViSKZO7iRUWedlA1+SO38la4Zw==
+    -----END RSA PRIVATE KEY-----
+  public_key.pub: |
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsodj5uX/ggl/46nQO5Xj
+    qG6ANVzX22jP0WO0Cic4qP4zot0GRHlmlEdT2qYayFaodUedC/dhWTGgcR7G2gjM
+    FUzGcti9YnFgSgo49sorU+AnoOsQP6rwS/W1nAdFlKSvQuU3ON1CJRfeR/4weEk0
+    WYA3n/QttfI4X+3JoGfsqmCQ5RWHj0NzDjn2MSJZSS6/NmhlHpZvP+37EJ5VGwiw
+    db49i0/xdtog6Om8LSvCLvm4VvkJ/wQmmmf22R+H5skqJmYzNVANuqZcTLVLu5ak
+    RSvTzN3yPx7bVPgxCTi0m9Vr/phBRpG+UScskuNA39UoGQnQLKDo76QsVruX8u9t
+    OwIDAQAB
+    -----END PUBLIC KEY-----
+
+mongodb:
+  # image:
+  # imagePullPolicy:
+  # mongodbRootPassword:
+  # mongodbUsername:
+  # mongodbPassword:
+  # mongodbDatabase:
+  # serviceType:
+  persistence:
+    enabled: false
+    # storageClass:
+    # accessMode: ReadWriteOnce
+    # size: 8Gi

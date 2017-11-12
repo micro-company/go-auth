@@ -41,3 +41,25 @@ openssl rsa \
 
 * Go
 * MongoDB
+
+### Kubernetes
+
+```
+# Run minikube
+minikube start \
+  --network-plugin=cni \
+  --kubernetes-version=v1.8.0
+  
+# Install Helm
+# See https://github.com/kubernetes/helm/blob/master/docs/install.md
+helm init
+helm repo update
+
+# Run application
+helm \
+  --kube-context minikube \
+  install \
+  --name go-auth \
+  --namespace=demo \
+  ops/Helm/go-auth
+```

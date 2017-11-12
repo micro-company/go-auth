@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    app: {{ .Chart.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.server.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
+          imagePullPolicy: {{ .Values.server.image.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
+          env:
+            - name: AUTH_PORT
+              value: "{{ .Values.server.env.AUTH_PORT }}"
+            - name: AUTH_MONGO_URL
+              value: "{{ .Values.server.env.AUTH_MONGO_URL }}"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.internalPort }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.internalPort }}
+          resources:
+{{ toYaml .Values.server.resources | indent 12 }}
+    {{- if .Values.server.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.server.nodeSelector | indent 8 }}
+    {{- end }}

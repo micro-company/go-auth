@@ -1,0 +1,15 @@
+apiVersion: v1
+description: Auth micro-service
+name: go-auth
+version: 0.1.0
+keywords:
+- auth
+- go
+home: https://github.com/batazor/go-auth
+sources:
+- https://github.com/batazor/go-auth
+maintainers:
+- name: Victor Login
+  email: batazor111@gmail.com
+  url: batazor.ru
+engine: gotpl
