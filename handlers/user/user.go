@@ -162,5 +162,5 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte(`{"success": true}`))
+	w.Write([]byte(`{}`))
 }

@@ -27,3 +27,7 @@
 [[constraint]]
   name = "github.com/uber/jaeger-client-go"
   version = "2.9.0"
+
+[[constraint]]
+  name = "github.com/go-chi/cors"
+  version = "1.0.0"

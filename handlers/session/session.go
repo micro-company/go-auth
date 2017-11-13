@@ -1,4 +1,4 @@
-package jwt
+package session
 
 import (
 	"crypto/rsa"
@@ -92,13 +92,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	searchUser.Mail = user.Mail
 	err, user = userModel.FindOne(searchUser)
 	if err != nil {
-		utils.Error(w, errors.New("incorrect mail or password"))
+		utils.Error(w, errors.New(`{"mail":"incorrect mail or password"}`))
 		return
 	}
 
 	isErr := utils.CheckPasswordHash(passwordUser, user.Password)
 	if !isErr {
-		utils.Error(w, errors.New("incorrect mail or pass"))
+		utils.Error(w, errors.New(`{"mail":"incorrect mail or password"}`))
 		return
 	}
 
@@ -117,7 +117,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("Authorization", "Bearer "+tokenString)
-	w.Write([]byte("{\"success\": true}"))
+	w.Write([]byte(`{
+		"tokens": {
+			"access": "` + tokenString + `",
+			"refresh": ""
+		}
+	}`))
 	return
 }
 
@@ -125,6 +130,6 @@ func Debug(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusBadRequest)
-	w.Write([]byte("{\"success\": false}"))
+	w.Write([]byte(`{"success": false}`))
 	return
 }

@@ -26,9 +26,7 @@ func Error(w http.ResponseWriter, err error) {
 
 	err_str := `{
 		"success": false,
-		"error": [
-			"` + err.Error() + `"
-		]
+		"error": ` + err.Error() + `
 	}`
 
 	w.Write([]byte(err_str))
