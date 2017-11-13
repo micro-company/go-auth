@@ -6,6 +6,7 @@ server:
   # annotations:
   #   metrics: true
   terminationGracePeriodSeconds: 30
+  podAnnotations: {}
   image:
     repository: batazor/go-auth
     tag: latest
