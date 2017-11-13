@@ -58,8 +58,8 @@
 [[projects]]
   name = "github.com/uber/jaeger-lib"
   packages = ["metrics"]
-  revision = "3b2a9ad2a045881ab7a0f81d465be54c8292ee4f"
-  version = "v1.1.0"
+  revision = "87d428f53f98801dc0e418fe5aa7d68c4abedd9d"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
