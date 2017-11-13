@@ -14,8 +14,8 @@ server:
     ## Ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
     imagePullPolicy: IfNotPresent
   env:
-    AUTH_PORT: 4070
-    AUTH_MONGO_URL: "mongodb/auth"
+    PORT: 4070
+    MONGO_URL: "mongodb://go-auth-mongodb:27017/auth"
   resources:
     limits:
       cpu: 500m

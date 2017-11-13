@@ -62,4 +62,7 @@ helm \
   --name go-auth \
   --namespace=demo \
   ops/Helm/go-auth
+  
+# Delete
+helm del --purge go-auth
 ```

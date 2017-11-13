@@ -22,10 +22,10 @@ spec:
           ports:
             - containerPort: {{ .Values.service.internalPort }}
           env:
-            - name: AUTH_PORT
-              value: "{{ .Values.server.env.AUTH_PORT }}"
-            - name: AUTH_MONGO_URL
-              value: "{{ .Values.server.env.AUTH_MONGO_URL }}"
+            - name: PORT
+              value: "{{ .Values.server.env.PORT }}"
+            - name: MONGO_URL
+              value: "{{ .Values.server.env.MONGO_URL }}"
           livenessProbe:
             httpGet:
               path: /
@@ -36,6 +36,17 @@ spec:
               port: {{ .Values.service.internalPort }}
           resources:
 {{ toYaml .Values.server.resources | indent 12 }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/cert/private_key.pem
+              subPath: private_key.pem
+            - name: config-volume
+              mountPath: /app/cert/public_key.pub
+              subPath: public_key.pub
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ .Chart.Name }}
     {{- if .Values.server.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.server.nodeSelector | indent 8 }}
