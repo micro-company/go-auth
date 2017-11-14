@@ -1,3 +1,5 @@
+image: docker:latest
+
 .job_template_build: &job_build
   type: build
   variables:
