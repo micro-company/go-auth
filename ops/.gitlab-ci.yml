@@ -1,8 +1,3 @@
-image: docker:latest
-
-services:
-- docker:dind
-
 .best_practices: &best_practices
   type: best_practices
   image: golang:1.9.2-alpine
@@ -39,7 +34,21 @@ services:
   - branches
   when: manual
 
+image: docker:latest
+
+services:
+- docker:dind
+
+cache:
+  paths:
+  - /apt-cache
+  - /go/src/github.com
+  - /go/src/golang.org
+  - /go/src/google.golang.org
+  - /go/src/gopkg.in
+
 variables:
+  GITHUB_PATH: gitlab.com/batazor
   PROJECT_NAMESPACE: micro-company
   RELEASE_NAME: $CI_PROJECT_NAME
   HELM_PATH: ops/Helm/go-auth
@@ -49,11 +58,26 @@ stages:
 - build
 - deploy
 
+before_script:
+  - mkdir -p /go/src/$GITHUB_PATH /go/src/_/builds
+  - cp -r $CI_PROJECT_DIR /go/src/$GITHUB_PATH/$CI_PROJECT_NAME
+  - ln -s /go/src/$GITHUB_PATH/$CI_PROJECT_NAME /go/src/_/builds/$CI_PROJECT_NAME
+
 lint:
   <<: *best_practices
   script:
   - go get -u github.com/golang/lint/golint
   - golint -set_exit_status $(go list ./... | grep -v /vendor/)
+
+unit test:
+  <<: *best_practices
+  script:
+  - go test -short $(go list ./... | grep -v /vendor/)
+
+data race:
+  <<: *best_practices
+  script:
+  - go test -race -short $(go list ./... | grep -v /vendor/)
 
 build:staging:
   <<: *job_build
