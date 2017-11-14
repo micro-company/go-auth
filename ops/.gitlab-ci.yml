@@ -1,5 +1,8 @@
 image: docker:latest
 
+services:
+- docker:dind
+
 .job_template_build: &job_build
   type: build
   variables:
