@@ -3,6 +3,13 @@ image: docker:latest
 services:
 - docker:dind
 
+.best_practices: &best_practices
+  type: best_practices
+  image: golang:1.9.2-alpine
+  only:
+  - tags
+  allow_failure: true
+
 .job_template_build: &job_build
   type: build
   variables:
@@ -36,8 +43,16 @@ variables:
   HELM_PATH: ops/Helm/go-auth
 
 stages:
+- best_practices
 - build
 - deploy
+
+lint:
+  <<: *best_practices
+  before_script:
+  - go get -u github.com/golang/lint/golint
+  script:
+  - golint -set_exit_status $(go list ./... | grep -v /vendor/)
 
 build:staging:
   <<: *job_build
