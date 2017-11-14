@@ -6,6 +6,8 @@ services:
 .best_practices: &best_practices
   type: best_practices
   image: golang:1.9.2-alpine
+  before_script:
+  - apk add --no-cache git
   only:
   - tags
   allow_failure: true
@@ -49,9 +51,8 @@ stages:
 
 lint:
   <<: *best_practices
-  before_script:
-  - go get -u github.com/golang/lint/golint
   script:
+  - go get -u github.com/golang/lint/golint
   - golint -set_exit_status $(go list ./... | grep -v /vendor/)
 
 build:staging:
