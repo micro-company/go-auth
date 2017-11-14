@@ -11,15 +11,6 @@ services:
   - branches
   when: on_success
 
-.job_template_registry: &job_registry
-  before_script:
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
-  type: registry
-  only:
-  - /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)-rc(?:0|[1-9]\d*)$/
-  - /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.?(?:0|[1-9]\d*)?$/
-  when: on_success
-
 .job_template_deploy: &job_deploy
   type: deploy
   variables:
@@ -46,20 +37,17 @@ variables:
 
 stages:
 - build
-- registry
 - deploy
 
 build:staging:
   <<: *job_build
+  before_script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
   - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG .
+  - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
   only:
   - /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)-rc(?:0|[1-9]\d*)$/
-
-registry:staging:
-  <<: *job_registry
-  script:
-  - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
 
 deploy:staging:
   <<: *job_deploy
@@ -73,17 +61,15 @@ deploy:staging:
 
 build:production:
   <<: *job_build
+  before_script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
   - docker build -t $CI_REGISTRY_IMAGE .
+  - docker push $CI_REGISTRY_IMAGE
   - docker build -t $CI_REGISTRY_IMAGE:$CI_BUILD_TAG .
+  - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
   only:
   - /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.?(?:0|[1-9]\d*)?$/
-
-registry:staging:
-  <<: *job_registry
-  script:
-  - docker push $CI_REGISTRY_IMAGE
-  - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
 
 deploy:production:
   <<: *job_deploy
