@@ -12,6 +12,8 @@ services:
   when: on_success
 
 .job_template_registry: &job_registry
+  before_script:
+  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
   type: registry
   when: on_success
 
