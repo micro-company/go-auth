@@ -19,7 +19,7 @@ func CheckUniqueUser(w http.ResponseWriter, user userModel.User) bool {
 
 	if count > 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		utils.Error(w, errors.New("need unique mail"))
+		utils.Error(w, errors.New(`{"mail":"need unique mail"}`))
 		return true
 	}
 
