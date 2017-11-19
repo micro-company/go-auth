@@ -28,6 +28,7 @@ func init() {
 // Routes creates a REST router
 func Routes() chi.Router {
 	r := chi.NewRouter()
+	r.Use(utils.CheckAuth)
 
 	r.Get("/", List)
 	r.Post("/", Create)
@@ -100,6 +101,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusCreated)
 	w.Write(output)
 	return
 }

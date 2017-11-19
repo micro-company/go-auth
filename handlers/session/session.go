@@ -116,14 +116,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Authorization", "Bearer "+tokenString)
+	w.Header().Set("TOKEN_ACCESS", tokenString)
+	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(`{
 		"tokens": {
 			"access": "` + tokenString + `",
 			"refresh": ""
 		}
 	}`))
-	return
 }
 
 func Debug(w http.ResponseWriter, r *http.Request) {
@@ -131,5 +131,4 @@ func Debug(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusBadRequest)
 	w.Write([]byte(`{"success": false}`))
-	return
 }
