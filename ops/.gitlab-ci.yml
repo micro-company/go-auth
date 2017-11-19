@@ -63,6 +63,17 @@ before_script:
   - cp -r $CI_PROJECT_DIR /go/src/$GITHUB_PATH/$CI_PROJECT_NAME
   - ln -s /go/src/$GITHUB_PATH/$CI_PROJECT_NAME /go/src/_/builds/$CI_PROJECT_NAME
 
+postman:
+  type: best_practices
+  image: node:9.2.0-alpine
+  before_script:
+  - npm install -g newman
+  script:
+  - newman run tests/go-auth.postman_collection.json -e tests/go-auth.postman_environment.json
+  only:
+  - tags
+  allow_failure: true
+
 lint:
   <<: *best_practices
   script:
