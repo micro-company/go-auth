@@ -1,39 +1,14 @@
-package utils
+package session
 
 import (
-	"crypto/rsa"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
+	"github.com/batazor/go-auth/utils"
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 )
-
-const (
-	PUBLIC_KEY = "cert/public_key.pub"
-)
-
-var (
-	verifyKey *rsa.PublicKey
-	signKey   *rsa.PrivateKey
-)
-
-func init() {
-	// JWT =====================================================================
-	verifyBytes, err := ioutil.ReadFile(PUBLIC_KEY)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	verifyKey, err = jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-}
 
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
@@ -69,14 +44,14 @@ func CheckAuth(next http.Handler) http.Handler {
 		var TOKEN_ACCESS = r.Header.Get("TOKEN_ACCESS")
 		if TOKEN_ACCESS == "" {
 			w.WriteHeader(http.StatusUnauthorized)
-			Error(w, errors.New("not auth"))
+			utils.Error(w, errors.New("not auth"))
 			return
 		}
 
 		token, err := VerifyToken(TOKEN_ACCESS)
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
-			Error(w, err)
+			utils.Error(w, err)
 			return
 		}
 
@@ -84,7 +59,7 @@ func CheckAuth(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		} else {
 			w.WriteHeader(http.StatusUnauthorized)
-			Error(w, errors.New("token invalid"))
+			utils.Error(w, errors.New("token invalid"))
 		}
 		return
 	})

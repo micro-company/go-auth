@@ -96,7 +96,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isErr := utils.CheckPasswordHash(passwordUser, user.Password)
+	isErr := CheckPasswordHash(passwordUser, user.Password)
 	if !isErr {
 		utils.Error(w, errors.New(`{"mail":"incorrect mail or password"}`))
 		return
@@ -115,7 +115,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/plain")
 	w.Header().Set("TOKEN_ACCESS", tokenString)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(`{

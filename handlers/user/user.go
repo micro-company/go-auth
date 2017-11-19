@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/batazor/go-auth/handlers/session"
 	"github.com/batazor/go-auth/models/user"
 	"github.com/batazor/go-auth/utils"
 	"github.com/go-chi/chi"
@@ -28,7 +29,7 @@ func init() {
 // Routes creates a REST router
 func Routes() chi.Router {
 	r := chi.NewRouter()
-	r.Use(utils.CheckAuth)
+	r.Use(session.CheckAuth)
 
 	r.Get("/", List)
 	r.Post("/", Create)
@@ -85,7 +86,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	id := bson.NewObjectId()
 	user.Id = id
-	user.Password, _ = utils.HashPassword(user.Password)
+	user.Password, _ = session.HashPassword(user.Password)
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
@@ -133,7 +134,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.Id = bson.ObjectIdHex(userId)
-	user.Password, _ = utils.HashPassword(user.Password)
+	user.Password, _ = session.HashPassword(user.Password)
 	user.UpdatedAt = time.Now()
 
 	err, user = userModel.Update(user)
@@ -160,7 +161,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	var userId = chi.URLParam(r, "userId")
 	err := userModel.Delete(userId)
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
