@@ -21,7 +21,7 @@ func init() {
 	log.Formatter = new(logrus.JSONFormatter)
 }
 
-func Connect() {
+func ConnectToMongo() {
 	// Get configuration
 	MONGO_URL := utils.Getenv("MONGO_URL", "localhost/auth")
 

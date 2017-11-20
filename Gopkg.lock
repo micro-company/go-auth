@@ -38,6 +38,18 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/go-redis/redis"
+  packages = [".","internal","internal/consistenthash","internal/hashtag","internal/pool","internal/proto"]
+  revision = "d0f86971b5d61de9cebd2616b932acb7ba14d957"
+  version = "v6.7.3"
+
+[[projects]]
+  name = "github.com/google/uuid"
+  packages = ["."]
+  revision = "064e2069ce9c359c118179501254f67d7d37ba24"
+  version = "0.2"
+
+[[projects]]
   name = "github.com/opentracing/opentracing-go"
   packages = [".","ext","log"]
   revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
@@ -88,6 +100,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "097f2de481d6d364a44b7abfc8c1353843d7c29f282b4c64ae4179ffee7d195b"
+  inputs-digest = "00bba7b42362bc16533749c9f410b0d287499b21927600af422afca74631dbd9"
   solver-name = "gps-cdcl"
   solver-version = 1

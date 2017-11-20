@@ -13,7 +13,7 @@ import (
 func CheckUniqueUser(w http.ResponseWriter, user userModel.User) bool {
 	count, err := db.Session.DB("users").C(userModel.CollectionUser).Find(bson.M{"mail": user.Mail}).Count()
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return true
 	}
 

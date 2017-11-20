@@ -27,8 +27,9 @@ func init() {
 	// configure the backend at github.com/Sirupsen/logrus
 	log.Formatter = new(logrus.JSONFormatter)
 
-	// Connect to MongoDB
-	db.Connect()
+	// Connect to DB
+	db.ConnectToMongo()
+	db.ConnectToRedis()
 }
 
 func main() {

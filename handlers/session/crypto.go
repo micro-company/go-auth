@@ -51,7 +51,7 @@ func CheckAuth(next http.Handler) http.Handler {
 		token, err := VerifyToken(TOKEN_ACCESS)
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
-			utils.Error(w, err)
+			utils.Error(w, errors.New(`"`+err.Error()+`"`))
 			return
 		}
 

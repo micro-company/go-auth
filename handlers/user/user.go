@@ -47,13 +47,14 @@ func List(w http.ResponseWriter, r *http.Request) {
 
 	err, users := userModel.List()
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
 	res, err := json.Marshal(&users)
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
 	}
 
 	w.Write(res)
@@ -68,14 +69,14 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
 	var user userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
@@ -92,13 +93,13 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	err, user = userModel.Add(user)
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
 	output, err := json.Marshal(user)
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
@@ -116,14 +117,14 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
 	var user userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
@@ -139,13 +140,13 @@ func Update(w http.ResponseWriter, r *http.Request) {
 
 	err, user = userModel.Update(user)
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
 	output, err := json.Marshal(user)
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 

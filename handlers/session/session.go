@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/batazor/go-auth/models/session"
 	"github.com/batazor/go-auth/models/user"
 	"github.com/batazor/go-auth/utils"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/chi"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -76,14 +78,14 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
 	var user userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
@@ -103,15 +105,24 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create JWT token
+	timeDuration := time.Now().Add(time.Minute * 5).Unix()
 	token := jwt.New(jwt.SigningMethodRS256)
 	claims := make(jwt.MapClaims)
-	claims["exp"] = time.Now().Add(time.Minute * 5).Unix()
+	claims["exp"] = timeDuration
 	claims["iat"] = time.Now().Unix()
 	token.Claims = claims
 
 	tokenString, err := token.SignedString(signKey)
 	if err != nil {
-		utils.Error(w, err)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	// Create REFRESH TOKEN
+	refreshToken, _ := uuid.NewUUID()
+	err = sessionModel.Add(refreshToken.String(), true, time.Duration(timeDuration))
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
@@ -120,7 +131,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{
 		"tokens": {
 			"access": "` + tokenString + `",
-			"refresh": ""
+			"refresh": "` + refreshToken.String() + `"
 		}
 	}`))
 }

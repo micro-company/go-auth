@@ -6,8 +6,20 @@ services:
     image: mongo:3.4.10
     container_name: mongo
     restart: always
+    ports:
+    - "27017:27017"
     volumes:
     - /data/go-auth/mongodb:/data/db
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    command: redis-server --appendonly yes
+    ports:
+    - "6379:6379"
+    volumes:
+    - /data/go-auth/redis:/data
 
   auth:
     build: .

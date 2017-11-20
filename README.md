@@ -21,6 +21,7 @@ docker-compose up
 |------------------|---------------------------|
 | PORT             | 4070                      |
 | MONGO_URL        | localhost/auth            |
+| REDIS_URL        | redis://localhost:6379    |
 
 ### Generation cert
 
