@@ -14,7 +14,7 @@ func CheckAuth(next http.Handler) http.Handler {
 		var TOKEN_ACCESS = r.Header.Get("TOKEN_ACCESS")
 		if TOKEN_ACCESS == "" {
 			w.WriteHeader(http.StatusUnauthorized)
-			utils.Error(w, errors.New("not auth"))
+			utils.Error(w, errors.New(`"not auth"`))
 			return
 		}
 

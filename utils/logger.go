@@ -25,7 +25,6 @@ func Error(w http.ResponseWriter, err error) {
 	log.Error(err)
 
 	err_str := `{
-		"success": false,
 		"error": ` + err.Error() + `
 	}`
 

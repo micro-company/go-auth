@@ -33,4 +33,3 @@ func VerifyToken(tokenString string) (*jwt.Token, error) {
 
 	return token, err
 }
-
