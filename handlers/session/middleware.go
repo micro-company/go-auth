@@ -29,7 +29,7 @@ func CheckAuth(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		} else {
 			w.WriteHeader(http.StatusUnauthorized)
-			utils.Error(w, errors.New("token invalid"))
+			utils.Error(w, errors.New(`"token invalid"`))
 		}
 		return
 	})
