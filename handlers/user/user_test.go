@@ -18,7 +18,7 @@ var (
 
 func init() {
 	// Connect to MongoDB
-	db.Connect()
+	db.ConnectToMongo()
 
 	// API
 	r.Get("/users", List)
