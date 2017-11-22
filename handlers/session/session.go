@@ -68,6 +68,7 @@ func Routes() chi.Router {
 
 	r.Get("/debug/:token", Debug)
 	r.Post("/", Login)
+	r.Delete("/", Logout)
 
 	return r
 }
@@ -136,9 +137,43 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}`))
 }
 
+func Logout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var TOKEN_ACCESS = r.Header.Get("TOKEN_ACCESS")
+	if TOKEN_ACCESS == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		utils.Error(w, errors.New(`"not auth"`))
+		return
+	}
+
+	token, err := VerifyToken(TOKEN_ACCESS)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	if !token.Valid {
+		w.WriteHeader(http.StatusUnauthorized)
+		utils.Error(w, errors.New(`"token invalid"`))
+		return
+	}
+
+	err = sessionModel.Delete(TOKEN_ACCESS)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{}`))
+}
+
 func Debug(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusBadRequest)
-	w.Write([]byte(`{"success": false}`))
+	w.Write([]byte(`{}`))
 }
