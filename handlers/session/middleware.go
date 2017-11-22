@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/batazor/go-auth/models/session"
 	"github.com/batazor/go-auth/utils"
 )
 
@@ -18,7 +19,7 @@ func CheckAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		token, err := VerifyToken(TOKEN_ACCESS)
+		token, err := sessionModel.VerifyToken(TOKEN_ACCESS)
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			utils.Error(w, errors.New(`"`+err.Error()+`"`))

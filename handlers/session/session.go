@@ -1,7 +1,6 @@
 package session
 
 import (
-	"crypto/rsa"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -10,24 +9,12 @@ import (
 
 	"github.com/batazor/go-auth/models/session"
 	"github.com/batazor/go-auth/models/user"
-	"github.com/batazor/go-auth/utils"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/go-chi/chi"
-	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/batazor/go-auth/utils"
 )
 
-const (
-	PRIVATE_KEY = "cert/private_key.pem"
-	PUBLIC_KEY  = "cert/public_key.pub"
-)
-
-var (
-	log = logrus.New()
-
-	verifyKey *rsa.PublicKey
-	signKey   *rsa.PrivateKey
-)
+var log = logrus.New()
 
 func init() {
 	// Logging =================================================================
@@ -35,31 +22,6 @@ func init() {
 	// it to use a custom JSONFormatter. See the logrus docs for how to
 	// configure the backend at github.com/Sirupsen/logrus
 	log.Formatter = new(logrus.JSONFormatter)
-
-	// JWT =====================================================================
-	signBytes, err := ioutil.ReadFile(PRIVATE_KEY)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	signKey, err = jwt.ParseRSAPrivateKeyFromPEM(signBytes)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	verifyBytes, err := ioutil.ReadFile(PUBLIC_KEY)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	verifyKey, err = jwt.ParseRSAPublicKeyFromPEM(verifyBytes)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
 }
 
 // Routes creates a REST router
@@ -107,21 +69,16 @@ func Login(w http.ResponseWriter, r *http.Request) {
 
 	// Create JWT token
 	timeDuration := time.Now().Add(time.Minute * 5).Unix()
-	token := jwt.New(jwt.SigningMethodRS256)
-	claims := make(jwt.MapClaims)
-	claims["exp"] = timeDuration
-	claims["iat"] = time.Now().Unix()
-	token.Claims = claims
 
-	tokenString, err := token.SignedString(signKey)
+	// get access token
+	tokenString, err := sessionModel.NewAccessToken(timeDuration)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
-	// Create REFRESH TOKEN
-	refreshToken, _ := uuid.NewUUID()
-	err = sessionModel.Add(refreshToken.String(), true, time.Duration(timeDuration))
+	// get refresh token
+	refreshToken, err := sessionModel.NewRefreshToken(timeDuration)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
@@ -132,7 +89,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{
 		"tokens": {
 			"access": "` + tokenString + `",
-			"refresh": "` + refreshToken.String() + `"
+			"refresh": "` + refreshToken + `"
 		}
 	}`))
 }
@@ -147,7 +104,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := VerifyToken(TOKEN_ACCESS)
+	token, err := sessionModel.VerifyToken(TOKEN_ACCESS)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
@@ -171,7 +128,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(`{}`))
 }
 
-func Debug(w http.ResponseWriter, r *http.Request) {
+func Debug(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 
 	w.WriteHeader(http.StatusBadRequest)
