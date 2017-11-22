@@ -73,6 +73,7 @@ func main() {
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
+	r.Use(middleware.AllowContentType("application/json"))
 	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(utils.NewStructuredLogger(log))
 	r.Use(middleware.Recoverer)
