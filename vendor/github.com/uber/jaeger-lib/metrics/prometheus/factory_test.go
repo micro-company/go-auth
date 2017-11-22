@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package prometheus
+package prometheus_test
 
 import (
 	"testing"
@@ -24,17 +24,22 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/uber/jaeger-lib/metrics"
+	. "github.com/uber/jaeger-lib/metrics/prometheus"
 )
 
 var _ metrics.Factory = new(Factory)
 
+func TestOptions(t *testing.T) {
+	f1 := New()
+	assert.NotNil(t, f1)
+}
+
 func TestCounter(t *testing.T) {
 	registry := prometheus.NewPedanticRegistry()
-	f1 := New(registry, nil)
+	f1 := New(WithRegisterer(registry))
 	fDummy := f1.Namespace("", nil)
 	f2 := fDummy.Namespace("bender", map[string]string{"a": "b"})
 	f3 := f2.Namespace("", nil)
-	assert.Equal(t, "bender", f3.(*Factory).scope)
 
 	c1 := f2.Counter("rodriguez", map[string]string{"x": "y"})
 	c2 := f2.Counter("rodriguez", map[string]string{"x": "z"})
@@ -56,7 +61,7 @@ func TestCounter(t *testing.T) {
 
 func TestGauge(t *testing.T) {
 	registry := prometheus.NewPedanticRegistry()
-	f1 := New(registry, nil)
+	f1 := New(WithRegisterer(registry))
 	f2 := f1.Namespace("bender", map[string]string{"a": "b"})
 	f3 := f2.Namespace("", map[string]string{"a": "b"}) // essentially same as f2
 	g1 := f2.Gauge("rodriguez", map[string]string{"x": "y"})
@@ -79,7 +84,7 @@ func TestGauge(t *testing.T) {
 
 func TestTimer(t *testing.T) {
 	registry := prometheus.NewPedanticRegistry()
-	f1 := New(registry, nil)
+	f1 := New(WithRegisterer(registry))
 	f2 := f1.Namespace("bender", map[string]string{"a": "b"})
 	f3 := f2.Namespace("", map[string]string{"a": "b"}) // essentially same as f2
 	t1 := f2.Timer("rodriguez", map[string]string{"x": "y"})
@@ -122,7 +127,7 @@ func TestTimer(t *testing.T) {
 
 func TestTimerCustomBuckets(t *testing.T) {
 	registry := prometheus.NewPedanticRegistry()
-	f1 := New(registry, []float64{1.5})
+	f1 := New(WithRegisterer(registry), WithBuckets([]float64{1.5}))
 	// dot and dash in the metric name will be replaced with underscore
 	t1 := f1.Timer("bender.bending-rodriguez", map[string]string{"x": "y"})
 	t1.Record(1 * time.Second)

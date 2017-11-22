@@ -1,22 +1,16 @@
-// Copyright (c) 2015 Uber Technologies, Inc.
-
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// Copyright (c) 2017 Uber Technologies, Inc.
 //
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package jaeger
 
@@ -32,6 +26,7 @@ import (
 	"github.com/uber/jaeger-lib/metrics"
 	"github.com/uber/jaeger-lib/metrics/testutils"
 
+	"github.com/uber/jaeger-client-go/internal/baggage"
 	"github.com/uber/jaeger-client-go/log"
 	"github.com/uber/jaeger-client-go/utils"
 )
@@ -52,6 +47,7 @@ func (s *tracerSuite) SetupTest() {
 		NewNullReporter(),
 		TracerOptions.Metrics(metrics),
 		TracerOptions.ZipkinSharedRPCSpan(true),
+		TracerOptions.BaggageRestrictionManager(baggage.NewDefaultRestrictionManager(0)),
 	)
 	s.NotNil(s.tracer)
 }
@@ -308,6 +304,62 @@ func TestEmptySpanContextAsParent(t *testing.T) {
 	ctx := span.Context().(SpanContext)
 	assert.True(t, ctx.traceID.IsValid())
 	assert.True(t, ctx.IsValid())
+}
+
+func TestGen128Bit(t *testing.T) {
+	tracer, tc := NewTracer("x", NewConstSampler(true), NewNullReporter(), TracerOptions.Gen128Bit(true))
+	defer tc.Close()
+
+	span := tracer.StartSpan("test", opentracing.ChildOf(emptyContext))
+	defer span.Finish()
+	traceID := span.Context().(SpanContext).TraceID()
+	assert.True(t, traceID.High != 0)
+	assert.True(t, traceID.Low != 0)
+}
+
+func TestHighTraceIDGenerator(t *testing.T) {
+	id := uint64(12345)
+	calledGenerator := false
+	highTraceIDGenerator := func() uint64 {
+		calledGenerator = true
+		return id
+	}
+
+	tracer, tc := NewTracer("x", NewConstSampler(true), NewNullReporter(), TracerOptions.HighTraceIDGenerator(highTraceIDGenerator), TracerOptions.Gen128Bit(true))
+	defer tc.Close()
+
+	span := tracer.StartSpan("test", opentracing.ChildOf(emptyContext))
+	defer span.Finish()
+	traceID := span.Context().(SpanContext).TraceID()
+	assert.Equal(t, id, traceID.High)
+	assert.True(t, calledGenerator)
+}
+
+// TODO: Remove mockLogger in favor of testutils/logger.go once it is refactored
+// from jaeger into jaeger-lib.
+
+type mockLogger struct {
+	msg string
+}
+
+func (l *mockLogger) Error(msg string) {
+	l.msg = msg
+}
+
+func (l *mockLogger) Infof(msg string, args ...interface{}) {
+}
+
+func TestHighTraceIDGeneratorNotGen128Bit(t *testing.T) {
+	highTraceIDGenerator := func() uint64 {
+		return 0
+	}
+	logger := &mockLogger{}
+	NewTracer("x", NewConstSampler(true), NewNullReporter(), TracerOptions.HighTraceIDGenerator(highTraceIDGenerator), TracerOptions.Gen128Bit(false), TracerOptions.Logger(logger))
+	msg := "Overriding high trace ID generator but not generating " +
+		"128 bit trace IDs, consider enabling the \"Gen128Bit\" option"
+	assert.Equal(t,
+		msg,
+		logger.msg)
 }
 
 func TestZipkinSharedRPCSpan(t *testing.T) {

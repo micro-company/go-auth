@@ -33,6 +33,41 @@ type Factory struct {
 	normalizer *strings.Replacer
 }
 
+type options struct {
+	registerer prometheus.Registerer
+	buckets    []float64
+}
+
+// Option is a function that sets some option for the Factory constructor.
+type Option func(*options)
+
+// WithRegisterer returns an option that sets the registerer.
+// If not used we fallback to prometheus.DefaultRegisterer.
+func WithRegisterer(registerer prometheus.Registerer) Option {
+	return func(opts *options) {
+		opts.registerer = registerer
+	}
+}
+
+// WithBuckets returns an option that sets the default buckets for histogram.
+// If not used, we fallback to default Prometheus buckets.
+func WithBuckets(buckets []float64) Option {
+	return func(opts *options) {
+		opts.buckets = buckets
+	}
+}
+
+func applyOptions(opts []Option) *options {
+	options := new(options)
+	for _, o := range opts {
+		o(options)
+	}
+	if options.registerer == nil {
+		options.registerer = prometheus.DefaultRegisterer
+	}
+	return options
+}
+
 // New creates a Factory backed by Prometheus registry.
 // Typically the first argument should be prometheus.DefaultRegisterer.
 //
@@ -41,15 +76,16 @@ type Factory struct {
 // values must be sorted in strictly increasing order. There is no need
 // to add a highest bucket with +Inf bound, it will be added
 // implicitly. The default value is prometheus.DefBuckets.
-func New(registerer prometheus.Registerer, buckets []float64) *Factory {
+func New(opts ...Option) *Factory {
+	options := applyOptions(opts)
 	return newFactory(
 		&Factory{ // dummy struct to be discarded
-			cache:      newVectorCache(registerer),
-			buckets:    buckets,
+			cache:      newVectorCache(options.registerer),
+			buckets:    options.buckets,
 			normalizer: strings.NewReplacer(".", "_", "-", "_"),
 		},
-		"",
-		nil)
+		"",  // scope
+		nil) // tags
 }
 
 func newFactory(parent *Factory, scope string, tags map[string]string) *Factory {

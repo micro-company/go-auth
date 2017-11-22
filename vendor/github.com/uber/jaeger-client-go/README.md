@@ -6,9 +6,55 @@ This is a client side library that implements an
 [OpenTracing](http://opentracing.io) Tracer,
 with Zipkin-compatible data model.
 
+**IMPORTANT**: The library's import path is `github.com/uber/jaeger-client-go`, based on its original location. Do not try to import it as `github.com/jaegertracing/jaeger-client-go`, it will not compile. We might revisit this in the next major release.
+
+## How to Contribute
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Installation
+
+We recommended using a dependency manager like [glide](https://github.com/Masterminds/glide)
+and [semantic versioning](http://semver.org/) when including this library into an application.
+For example, Jaeger backend imports this library like this:
+
+```yaml
+- package: github.com/uber/jaeger-client-go
+  version: ^2.7.0
+```
+
+If you instead want to use the latest version in `master`, you can pull it via `go get`.
+Note that during `go get` you may see build errors due to incompatible dependencies, which is why
+we recommend using semantic versions for dependencioes.  The error  may be fixed by running
+`make install` (it will install `glide` if you don't have it):
+
+```shell
+go get -u github.com/uber/jaeger-client-go/
+cd $GOPATH/src/github.com/uber/jaeger-client-go/
+git submodule update --init --recursive
+make install
+```
+
 ## Initialization
 
-See [tracer initialization](https://godoc.org/github.com/uber/jaeger-client-go/config#pkg-examples).
+See tracer initialization examples in [godoc](https://godoc.org/github.com/uber/jaeger-client-go/config#pkg-examples)
+and [config/example_test.go](./config/example_test.go).
+
+### Closing the tracer via `io.Closer`
+
+The constructor functions for Jaeger Tracer return the tracer itself and an `io.Closer` instance.
+It is recommended to structure your `main()` so that it calls the `Close()` function on the closer
+before exiting, e.g.
+
+```go
+tracer, closer, err := cfg.New(...)
+defer closer.Close()
+```
+
+This is especially useful for command-line tools that enable tracing, as well as
+for the long-running apps that support graceful shutdown. For example, if your deployment
+system sends SIGTERM instead of killing the process and you trap that signal to do a graceful
+exit, then having `defer closer.Closer()` ensures that all buffered spans are flushed.
 
 ### Metrics & Monitoring
 
@@ -40,12 +86,15 @@ by the [Logger](logger.go) interface. A logger instance implementing
 this interface can be set on the `Config` object before calling the
 `New` method.
 
+Besides the [zap](https://github.com/uber-go/zap) implementation
+bundled with this package there is also a [go-kit](https://github.com/go-kit/kit)
+one in the [jaeger-lib](https://github.com/uber/jaeger-lib) repository.
+
 ## Instrumentation for Tracing
 
 Since this tracer is fully compliant with OpenTracing API 1.0,
 all code instrumentation should only use the API itself, as described
-in the [opentracing-go]
-(https://github.com/opentracing/opentracing-go) documentation.
+in the [opentracing-go](https://github.com/opentracing/opentracing-go) documentation.
 
 ## Features
 
@@ -169,14 +218,14 @@ However it is not the default propagation format, see [here](zipkin/README.md#Ne
 
 ## License
 
-  [The MIT License](LICENSE).
+[Apache 2.0 License](LICENSE).
 
 
 [doc-img]: https://godoc.org/github.com/uber/jaeger-client-go?status.svg
 [doc]: https://godoc.org/github.com/uber/jaeger-client-go
-[ci-img]: https://travis-ci.org/uber/jaeger-client-go.svg?branch=master
-[ci]: https://travis-ci.org/uber/jaeger-client-go
-[cov-img]: https://coveralls.io/repos/uber/jaeger-client-go/badge.svg?branch=master&service=github
-[cov]: https://coveralls.io/github/uber/jaeger-client-go?branch=master
+[ci-img]: https://travis-ci.org/jaegertracing/jaeger-client-go.svg?branch=master
+[ci]: https://travis-ci.org/jaegertracing/jaeger-client-go
+[cov-img]: https://codecov.io/gh/jaegertracing/jaeger-client-go/branch/master/graph/badge.svg
+[cov]: https://codecov.io/gh/jaegertracing/jaeger-client-go
 [ot-img]: https://img.shields.io/badge/OpenTracing--1.0-enabled-blue.svg
 [ot-url]: http://opentracing.io

@@ -1,27 +1,22 @@
 // Copyright (c) 2017 Uber Technologies, Inc.
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
+// http://www.apache.org/licenses/LICENSE-2.0
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package config
 
 import (
 	"testing"
+	"time"
 
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
@@ -112,7 +107,7 @@ func TestNewReporterError(t *testing.T) {
 func TestInitGlobalTracer(t *testing.T) {
 	// Save the existing GlobalTracer and replace after finishing function
 	prevTracer := opentracing.GlobalTracer()
-	defer opentracing.InitGlobalTracer(prevTracer)
+	defer opentracing.SetGlobalTracer(prevTracer)
 	noopTracer := opentracing.NoopTracer{}
 
 	tests := []struct {
@@ -147,7 +142,7 @@ func TestInitGlobalTracer(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		opentracing.InitGlobalTracer(noopTracer)
+		opentracing.SetGlobalTracer(noopTracer)
 		_, err := test.cfg.InitGlobalTracer("testService")
 		if test.shouldErr {
 			require.Error(t, err)
@@ -206,4 +201,59 @@ func TestConfigWithRPCMetrics(t *testing.T) {
 			Value: 1,
 		},
 	)
+}
+
+func TestBaggageRestrictionsConfig(t *testing.T) {
+	m := metrics.NewLocalFactory(0)
+	c := Configuration{
+		BaggageRestrictions: &BaggageRestrictionsConfig{
+			HostPort:        "not:1929213",
+			RefreshInterval: time.Minute,
+		},
+	}
+	_, closer, err := c.New(
+		"test",
+		Metrics(m),
+	)
+	require.NoError(t, err)
+	defer closer.Close()
+
+	metricName := "jaeger.baggage-restrictions-update"
+	metricTags := map[string]string{"result": "err"}
+	key := metrics.GetKey(metricName, metricTags, "|", "=")
+	for i := 0; i < 100; i++ {
+		// wait until the async initialization call is complete
+		counters, _ := m.Snapshot()
+		if _, ok := counters[key]; ok {
+			break
+		}
+		time.Sleep(time.Millisecond)
+	}
+
+	testutils.AssertCounterMetrics(t, m,
+		testutils.ExpectedMetric{
+			Name:  metricName,
+			Tags:  metricTags,
+			Value: 1,
+		},
+	)
+}
+
+func TestConfigWithGen128Bit(t *testing.T) {
+	c := Configuration{
+		Sampler: &SamplerConfig{
+			Type:  "const",
+			Param: 1,
+		},
+		RPCMetrics: true,
+	}
+	tracer, closer, err := c.New("test", Gen128Bit(true))
+	require.NoError(t, err)
+	defer closer.Close()
+
+	span := tracer.StartSpan("test")
+	defer span.Finish()
+	traceID := span.Context().(jaeger.SpanContext).TraceID()
+	require.True(t, traceID.High != 0)
+	require.True(t, traceID.Low != 0)
 }

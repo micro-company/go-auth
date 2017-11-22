@@ -1,22 +1,16 @@
 // Copyright (c) 2017 Uber Technologies, Inc.
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
+// http://www.apache.org/licenses/LICENSE-2.0
 //
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package jaeger
 
@@ -153,7 +147,7 @@ func TestDecodingError(t *testing.T) {
 
 	badHeader := "x.x.x.x"
 	httpHeader := http.Header{}
-	httpHeader.Add(TracerStateHeaderName, badHeader)
+	httpHeader.Add(TraceContextHeaderName, badHeader)
 	tmc := opentracing.HTTPHeadersCarrier(httpHeader)
 	_, err := tracer.Extract(opentracing.HTTPHeaders, tmc)
 	assert.Error(t, err)
@@ -165,22 +159,24 @@ func TestBaggagePropagationHTTP(t *testing.T) {
 	tracer, closer := NewTracer("DOOP", NewConstSampler(true), NewNullReporter())
 	defer closer.Close()
 
-	sp1 := tracer.StartSpan("s1")
+	sp1 := tracer.StartSpan("s1").(*Span)
 	sp1.SetBaggageItem("Some_Key", "12345")
-	assert.Equal(t, "12345", sp1.BaggageItem("some-KEY"), "baggage: %+v", sp1.(*Span).context.baggage)
-	sp1.SetBaggageItem("Some_Key", "98:765") // colon : should be escaped as %3A
-	assert.Equal(t, "98:765", sp1.BaggageItem("some-KEY"), "baggage: %+v", sp1.(*Span).context.baggage)
+	assert.Equal(t, "12345", sp1.BaggageItem("Some_Key"), "baggage: %+v", sp1.context.baggage)
+	assert.Empty(t, sp1.BaggageItem("some-KEY"), "baggage: %+v", sp1.context.baggage)
+	sp1.SetBaggageItem("Some_Key", "98:765")
+	assert.Equal(t, "98:765", sp1.BaggageItem("Some_Key"), "baggage: %+v", sp1.context.baggage)
+	assert.Empty(t, sp1.BaggageItem("some-KEY"), "baggage: %+v", sp1.context.baggage)
 
 	h := http.Header{}
 	h.Add("header1", "value1") // make sure this does not get unmarshalled as baggage
 	err := tracer.Inject(sp1.Context(), opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(h))
 	require.NoError(t, err)
 	// check that colon : was encoded as %3A
-	assert.Equal(t, "98%3A765", h.Get(TraceBaggageHeaderPrefix+"some-key"))
+	assert.Equal(t, "98%3A765", h.Get(TraceBaggageHeaderPrefix+"Some_Key"), "headers: %+v", h)
 
 	sp2, err := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(h))
 	require.NoError(t, err)
-	assert.Equal(t, map[string]string{"some-key": "98:765"}, sp2.(SpanContext).baggage)
+	assert.Equal(t, map[string]string{"some_key": "98:765"}, sp2.(SpanContext).baggage)
 }
 
 func TestJaegerBaggageHeader(t *testing.T) {
@@ -227,7 +223,9 @@ func TestParseCommaSeperatedMap(t *testing.T) {
 	}
 
 	for _, testcase := range testcases {
-		m := parseCommaSeparatedMap(testcase.in)
+		m := (&textMapPropagator{
+			headerKeys: getDefaultHeadersConfig(),
+		}).parseCommaSeparatedMap(testcase.in)
 		assert.Equal(t, testcase.out, m)
 	}
 }
