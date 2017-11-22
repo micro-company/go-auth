@@ -30,7 +30,6 @@ type Session struct {
 	status bool
 }
 
-
 func init() {
 	// Logging =================================================================
 	// Setup the logger backend using Sirupsen/logrus and configure
@@ -81,7 +80,7 @@ func NewAccessToken(timeDuration int64) (string, error) {
 
 func NewRefreshToken(timeDuration int64) (string, error) {
 	refreshToken, _ := uuid.NewUUID()
-	err := db.Redis.Set(refreshToken.String(), true, time.Duration(timeDuration)).Err()
+	err := db.Redis.Set(refreshToken.String(), "true", time.Duration(timeDuration)).Err()
 	if err != nil {
 		return "", err
 	}
@@ -113,4 +112,18 @@ func VerifyToken(tokenString string) (*jwt.Token, error) {
 	}
 
 	return token, err
+}
+
+func CheckRefreshToken(token string) (bool, error) {
+	value := db.Redis.Get(token)
+	if value.Err() != nil  {
+		return false, value.Err()
+	}
+
+	status, err := value.Result()
+	if err != nil && status != "true" {
+		return false, err
+	}
+
+	return true, nil
 }

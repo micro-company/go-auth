@@ -94,6 +94,51 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}`))
 }
 
+func Refresh(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var TOKEN_REFRESH = r.Header.Get("TOKEN_REFRESH")
+	if TOKEN_REFRESH == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		utils.Error(w, errors.New(`"not auth"`))
+		return
+	}
+
+	// Chech REFRESH TOKEN
+	status, err := sessionModel.CheckRefreshToken(TOKEN_REFRESH)
+	if err != nil || status != true {
+		w.WriteHeader(http.StatusUnauthorized)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	// Create JWT token
+	timeDuration := time.Now().Add(time.Minute * 5).Unix()
+
+	// get access token
+	tokenString, err := sessionModel.NewAccessToken(timeDuration)
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	// get refresh token
+	refreshToken, err := sessionModel.NewRefreshToken(timeDuration)
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	w.Header().Set("TOKEN_ACCESS", tokenString)
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(`{
+		"tokens": {
+			"access": "` + tokenString + `",
+			"refresh": "` + refreshToken + `"
+		}
+	}`))
+}
+
 func Logout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
