@@ -11,7 +11,7 @@
 			"description": "",
 			"item": [
 				{
-					"name": "{{URL_API}}/auth",
+					"name": "Login",
 					"event": [
 						{
 							"listen": "test",
@@ -34,7 +34,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"mail\": \"admin@gmail.com\",\n    \"password\": \"admin\"\n}"
+							"raw": "{\n    \"mail\": \"admin@example.com\",\n    \"password\": \"admin\"\n}"
 						},
 						"url": {
 							"raw": "{{URL_API}}/auth",
@@ -56,12 +56,16 @@
 			"description": "",
 			"item": [
 				{
-					"name": "{{URL_API}}/users",
+					"name": "Get users list",
 					"request": {
 						"method": "GET",
 						"header": [
 							{
-								"key": "TOKEN_ACCESS",
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
 								"value": "{{TOKEN_ACCESS}}"
 							}
 						],
@@ -80,7 +84,7 @@
 					"response": []
 				},
 				{
-					"name": "{{URL_API}}/users",
+					"name": "Add user",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -89,7 +93,7 @@
 								"value": "application/json"
 							},
 							{
-								"key": "TOKEN_ACCESS",
+								"key": "Authorization",
 								"value": "{{TOKEN_ACCESS}}"
 							}
 						],
@@ -111,7 +115,7 @@
 					"response": []
 				},
 				{
-					"name": "{{URL_API}}/users/{{USER_ID}}",
+					"name": "Update user",
 					"request": {
 						"method": "PATCH",
 						"header": [
@@ -120,7 +124,7 @@
 								"value": "application/json"
 							},
 							{
-								"key": "TOKEN_ACCESS",
+								"key": "Authorization",
 								"value": "{{TOKEN_ACCESS}}"
 							}
 						],
@@ -143,12 +147,12 @@
 					"response": []
 				},
 				{
-					"name": "{{URL_API}}/users/{{USER_ID}}",
+					"name": "Delete user",
 					"request": {
 						"method": "DELETE",
 						"header": [
 							{
-								"key": "TOKEN_ACCESS",
+								"key": "Authorization",
 								"value": "{{TOKEN_ACCESS}}"
 							}
 						],

@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi"
 	"github.com/micro-company/go-auth/models/session"
 	"github.com/micro-company/go-auth/models/user"
-	"github.com/go-chi/chi"
-	"github.com/sirupsen/logrus"
 	"github.com/micro-company/go-auth/utils"
+	"github.com/sirupsen/logrus"
 )
 
 var log = logrus.New()
@@ -84,7 +84,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("TOKEN_ACCESS", tokenString)
+	w.Header().Set("Authorization", tokenString)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(`{
 		"tokens": {
@@ -129,7 +129,7 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("TOKEN_ACCESS", tokenString)
+	w.Header().Set("Authorization", tokenString)
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(`{
 		"tokens": {
@@ -142,14 +142,14 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 func Logout(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var TOKEN_ACCESS = r.Header.Get("TOKEN_ACCESS")
-	if TOKEN_ACCESS == "" {
+	var Authorization = r.Header.Get("Authorization")
+	if Authorization == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		utils.Error(w, errors.New(`"not auth"`))
 		return
 	}
 
-	token, err := sessionModel.VerifyToken(TOKEN_ACCESS)
+	token, err := sessionModel.VerifyToken(Authorization)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
@@ -162,7 +162,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = sessionModel.Delete(TOKEN_ACCESS)
+	err = sessionModel.Delete(Authorization)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))

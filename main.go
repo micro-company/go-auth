@@ -4,14 +4,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/micro-company/go-auth/db"
-	"github.com/micro-company/go-auth/handlers/session"
-	"github.com/micro-company/go-auth/handlers/user"
-	"github.com/micro-company/go-auth/utils"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
+	"github.com/micro-company/go-auth/db"
+	"github.com/micro-company/go-auth/handlers/session"
+	"github.com/micro-company/go-auth/handlers/user"
+	"github.com/micro-company/go-auth/utils"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"github.com/uber/jaeger-client-go"
@@ -67,6 +67,7 @@ func main() {
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 		MaxAge:           300,
+		//Debug:            true,
 	})
 
 	r.Use(cors.Handler)
