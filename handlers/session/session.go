@@ -7,9 +7,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/micro-company/go-auth/utils/crypto"
+
 	"github.com/micro-company/go-auth/utils/recaptcha"
 
 	"github.com/go-chi/chi"
+	"github.com/micro-company/go-auth/handlers/user"
 	"github.com/micro-company/go-auth/models/session"
 	"github.com/micro-company/go-auth/models/user"
 	"github.com/micro-company/go-auth/utils"
@@ -32,6 +35,7 @@ func Routes() chi.Router {
 
 	r.Get("/debug/:token", Debug)
 	r.Post("/", Login)
+	r.Post("/new", Registration)
 	r.Delete("/", Logout)
 
 	return r
@@ -70,7 +74,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isErr := CheckPasswordHash(passwordUser, user.Password)
+	isErr := crypto.CheckPasswordHash(passwordUser, user.Password)
 	if !isErr {
 		utils.Error(w, errors.New(`{"mail":"incorrect mail or password"}`))
 		return
@@ -101,6 +105,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 			"refresh": "` + refreshToken + `"
 		}
 	}`))
+}
+
+func Registration(w http.ResponseWriter, r *http.Request) {
+	user.Create(w, r)
 }
 
 func Refresh(w http.ResponseWriter, r *http.Request) {

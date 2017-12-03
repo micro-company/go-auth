@@ -7,10 +7,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/micro-company/go-auth/handlers/session"
+	"github.com/micro-company/go-auth/middleware"
+
+	"github.com/micro-company/go-auth/utils/crypto"
+
+	"github.com/go-chi/chi"
 	"github.com/micro-company/go-auth/models/user"
 	"github.com/micro-company/go-auth/utils"
-	"github.com/go-chi/chi"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
@@ -29,7 +32,7 @@ func init() {
 // Routes creates a REST router
 func Routes() chi.Router {
 	r := chi.NewRouter()
-	r.Use(session.CheckAuth)
+	r.Use(middleware.CheckAuth)
 
 	r.Get("/", List)
 	r.Post("/", Create)
@@ -87,7 +90,7 @@ func Create(w http.ResponseWriter, r *http.Request) {
 
 	id := bson.NewObjectId()
 	user.Id = id
-	user.Password, _ = session.HashPassword(user.Password)
+	user.Password, _ = crypto.HashPassword(user.Password)
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
@@ -135,7 +138,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user.Id = bson.ObjectIdHex(userId)
-	user.Password, _ = session.HashPassword(user.Password)
+	user.Password, _ = crypto.HashPassword(user.Password)
 	user.UpdatedAt = time.Now()
 
 	err, user = userModel.Update(user)

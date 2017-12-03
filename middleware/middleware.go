@@ -1,4 +1,4 @@
-package session
+package middleware
 
 import (
 	"errors"
