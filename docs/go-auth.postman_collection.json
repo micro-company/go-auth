@@ -1,0 +1,173 @@
+{
+	"info": {
+		"name": "go-auth",
+		"_postman_id": "bd6518ef-40a4-4283-e15c-aeaf3f60c6cb",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"description": "",
+			"item": [
+				{
+					"name": "{{URL_API}}/auth",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"const jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"TOKEN_ACCESS\", jsonData.tokens.access);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mail\": \"admin@gmail.com\",\n    \"password\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{URL_API}}/auth",
+							"host": [
+								"{{URL_API}}"
+							],
+							"path": [
+								"auth"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "users",
+			"description": "",
+			"item": [
+				{
+					"name": "{{URL_API}}/users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "TOKEN_ACCESS",
+								"value": "{{TOKEN_ACCESS}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{URL_API}}/users",
+							"host": [
+								"{{URL_API}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "{{URL_API}}/users",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "TOKEN_ACCESS",
+								"value": "{{TOKEN_ACCESS}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"mail\": \"admin1@gmail.com\",\n  \"password\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{URL_API}}/users",
+							"host": [
+								"{{URL_API}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "{{URL_API}}/users/{{USER_ID}}",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "TOKEN_ACCESS",
+								"value": "{{TOKEN_ACCESS}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"{{USER_ID}}\",\n    \"mail\": \"ivan54@gmail.com\",\n    \"password\": \"1234567\",\n    \"created_on\": 0,\n    \"updated_on\": 0\n}"
+						},
+						"url": {
+							"raw": "{{URL_API}}/users/{{USER_ID}}",
+							"host": [
+								"{{URL_API}}"
+							],
+							"path": [
+								"users",
+								"{{USER_ID}}"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "{{URL_API}}/users/{{USER_ID}}",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "TOKEN_ACCESS",
+								"value": "{{TOKEN_ACCESS}}"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{URL_API}}/users/{{USER_ID}}",
+							"host": [
+								"{{URL_API}}"
+							],
+							"path": [
+								"users",
+								"{{USER_ID}}"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
