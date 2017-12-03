@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/batazor/go-auth/handlers/session"
-	"github.com/batazor/go-auth/models/user"
-	"github.com/batazor/go-auth/utils"
+	"github.com/micro-company/go-auth/handlers/session"
+	"github.com/micro-company/go-auth/models/user"
+	"github.com/micro-company/go-auth/utils"
 	"github.com/go-chi/chi"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"

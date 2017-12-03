@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/batazor/go-auth/models/session"
-	"github.com/batazor/go-auth/utils"
+	"github.com/micro-company/go-auth/models/session"
+	"github.com/micro-company/go-auth/utils"
 )
 
 func CheckAuth(next http.Handler) http.Handler {

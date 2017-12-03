@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/batazor/go-auth/db"
-	"github.com/batazor/go-auth/models/user"
+	"github.com/micro-company/go-auth/db"
+	"github.com/micro-company/go-auth/models/user"
 	"github.com/go-chi/chi"
 )
 

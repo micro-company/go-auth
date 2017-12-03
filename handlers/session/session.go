@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/batazor/go-auth/models/session"
-	"github.com/batazor/go-auth/models/user"
+	"github.com/micro-company/go-auth/models/session"
+	"github.com/micro-company/go-auth/models/user"
 	"github.com/go-chi/chi"
 	"github.com/sirupsen/logrus"
-	"github.com/batazor/go-auth/utils"
+	"github.com/micro-company/go-auth/utils"
 )
 
 var log = logrus.New()

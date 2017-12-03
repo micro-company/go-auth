@@ -4,9 +4,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/batazor/go-auth/db"
-	"github.com/batazor/go-auth/models/user"
-	"github.com/batazor/go-auth/utils"
+	"github.com/micro-company/go-auth/db"
+	"github.com/micro-company/go-auth/models/user"
+	"github.com/micro-company/go-auth/utils"
 	"gopkg.in/mgo.v2/bson"
 )
 

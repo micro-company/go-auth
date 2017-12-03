@@ -5,9 +5,9 @@ version: 0.1.0
 keywords:
 - auth
 - go
-home: https://github.com/batazor/go-auth
+home: https://github.com/micro-company/go-auth
 sources:
-- https://github.com/batazor/go-auth
+- https://github.com/micro-company/go-auth
 maintainers:
 - name: Victor Login
   email: batazor111@gmail.com

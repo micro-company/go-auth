@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/batazor/go-auth/utils"
+	"github.com/micro-company/go-auth/utils"
 	"github.com/go-redis/redis"
 )
 

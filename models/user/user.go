@@ -3,7 +3,7 @@ package userModel
 import (
 	"time"
 
-	"github.com/batazor/go-auth/db"
+	"github.com/micro-company/go-auth/db"
 	"gopkg.in/mgo.v2/bson"
 )
 
