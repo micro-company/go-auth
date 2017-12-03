@@ -108,6 +108,22 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func Registration(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	// Check recaptcha
+	err = recaptcha.VerifyCaptcha(b)
+	if err != nil {
+		utils.Error(w, errors.New(`{"captcha":`+err.Error()+`}`))
+		return
+	}
+
 	user.Create(w, r)
 }
 
