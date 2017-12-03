@@ -45,6 +45,7 @@ services:
     environment:
       PORT: 4070
       MONGO_URL: mongo/auth
+      RECAPTCHA_PRIVATE_KEY: "secretKey"
 #    ports:
 #    - "4070:4070"
     depends_on:

@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/micro-company/go-auth/utils/recaptcha"
+
 	"github.com/go-chi/chi"
 	"github.com/micro-company/go-auth/models/session"
 	"github.com/micro-company/go-auth/models/user"
@@ -49,6 +51,13 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	// Check recaptcha
+	err = recaptcha.VerifyCaptcha(b)
+	if err != nil {
+		utils.Error(w, errors.New(`{"captcha":`+err.Error()+`}`))
 		return
 	}
 

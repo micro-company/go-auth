@@ -17,11 +17,12 @@ docker-compose up
 
 ### ENV
 
-| Name ENV         | Default value             |
-|------------------|---------------------------|
-| PORT             | 4070                      |
-| MONGO_URL        | localhost/auth            |
-| REDIS_URL        | redis://localhost:6379    |
+| Name ENV              | Default value             |
+|-----------------------|---------------------------|
+| PORT                  | 4070                      |
+| MONGO_URL             | localhost/auth            |
+| REDIS_URL             | redis://localhost:6379    |
+| RECAPTCHA_PRIVATE_KEY | secretKey                 |
 
 ### Generation cert
 
