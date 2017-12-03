@@ -23,7 +23,7 @@ type User struct {
 
 func List() (error, []User) {
 	var users []User
-	err := db.Session.DB("users").C(CollectionUser).Find(nil).Sort("-updated_on").All(&users)
+	err := db.Session.DB("auth").C(CollectionUser).Find(nil).Sort("-updated_on").All(&users)
 	if err != nil {
 		return err, users
 	}
@@ -33,7 +33,7 @@ func List() (error, []User) {
 
 func Find(user User) (error, []User) {
 	var users []User
-	err := db.Session.DB("users").C(CollectionUser).Find(user).Sort("-updated_on").All(&users)
+	err := db.Session.DB("auth").C(CollectionUser).Find(user).Sort("-updated_on").All(&users)
 	if err != nil {
 		return err, users
 	}
@@ -42,7 +42,7 @@ func Find(user User) (error, []User) {
 }
 
 func FindOne(user User) (error, User) {
-	err := db.Session.DB("users").C(CollectionUser).Find(&user).One(&user)
+	err := db.Session.DB("auth").C(CollectionUser).Find(&user).One(&user)
 	if err != nil {
 		return err, user
 	}
@@ -51,7 +51,7 @@ func FindOne(user User) (error, User) {
 }
 
 func Add(user User) (error, User) {
-	err := db.Session.DB("users").C(CollectionUser).Insert(user)
+	err := db.Session.DB("auth").C(CollectionUser).Insert(user)
 	if err != nil {
 		return err, user
 	}
@@ -60,7 +60,7 @@ func Add(user User) (error, User) {
 }
 
 func Update(user User) (error, User) {
-	err := db.Session.DB("users").C(CollectionUser).UpdateId(user.Id, user)
+	err := db.Session.DB("auth").C(CollectionUser).UpdateId(user.Id, user)
 	if err != nil {
 		return err, user
 	}
@@ -69,7 +69,7 @@ func Update(user User) (error, User) {
 }
 
 func Delete(userId string) error {
-	err := db.Session.DB("users").C(CollectionUser).RemoveId(bson.ObjectIdHex(userId))
+	err := db.Session.DB("auth").C(CollectionUser).RemoveId(bson.ObjectIdHex(userId))
 	if err != nil {
 		return err
 	}

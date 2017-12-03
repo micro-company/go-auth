@@ -11,6 +11,23 @@ services:
     volumes:
     - /data/go-auth/mongodb:/data/db
 
+  mongo_initial_state:
+    image: mongo:3.4.10
+    container_name: mongo_initial_state
+    restart: on-failure
+    depends_on:
+    - mongo
+    command: >
+      bash -c "mongoimport \
+                -h=mongo:27017 \
+                -d auth \
+                -c users \
+                --mode merge \
+                --file /initialState/user.json"
+    volumes:
+    - ./initialState:/initialState
+
+
   redis:
     image: redis:alpine
     container_name: redis
@@ -32,6 +49,7 @@ services:
 #    - "4070:4070"
     depends_on:
     - mongo
+    - mongo_initial_state
     volumes:
     - ./cert:/app/cert
 

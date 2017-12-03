@@ -68,3 +68,7 @@ helm \
 # Delete
 helm del --purge go-auth
 ```
+
+### Initial state for data base
+
+`initialState/user.json` - contains initial information 
