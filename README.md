@@ -8,6 +8,12 @@ Auth micro-service
 
 ![Schema auth-service](docs/schema.png)
 
+### Feature
+
++ JWT auth
++ Support Google recaptcha
++ User manager
+
 ### RUN
 
 ```
