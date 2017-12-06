@@ -37,6 +37,7 @@ func Routes() chi.Router {
 	r.Get("/debug/:token", Debug)
 	r.Post("/", Login)
 	r.Post("/new", Registration)
+	r.Post("/recovery", Recovery)
 	r.Delete("/", Logout)
 
 	return r
@@ -129,6 +130,49 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 	r.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 
 	user.Create(w, r)
+}
+
+func Recovery(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	// Check recaptcha
+	err = recaptcha.VerifyCaptcha(b)
+	if err != nil {
+		utils.Error(w, errors.New(`{"captcha":`+err.Error()+`}`))
+		return
+	}
+
+	var user userModel.User
+	err = json.Unmarshal(b, &user)
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	// TODO: Create template mail.tpl
+	// TODO: generate link for recovery pass (save URL and TTL to redis)
+	// TODO: Load template (use mail.tpl) and render valid html
+	// TODO: send mail
+
+	// TODO: FRONT-END
+	// TODO: router `/recovery/:id`
+	// TODO: write new password
+	// TODO: request to BACK-END
+
+	// TODO: BACK-END
+	// TODO: search user
+	// TODO: id false -> return error
+	// TODO:    true -> save new password(hash)
+	// TODO:         -> return success
+	// TODO: Send mail (theme: New password)
+	// TODO: Delete `/recovery/:id` from DB
 }
 
 func Refresh(w http.ResponseWriter, r *http.Request) {
