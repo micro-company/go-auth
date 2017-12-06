@@ -12,6 +12,7 @@ Auth micro-service
 + JWT auth
 + Support Google recaptcha
 + User manager
++ [UI example](https://micro-company.github.io/react-app/)
 
 
 ![Schema auth-service](docs/schema.png)
