@@ -1,6 +1,7 @@
 package session
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -108,21 +109,24 @@ func Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func Registration(w http.ResponseWriter, r *http.Request) {
-	//w.Header().Set("Content-Type", "application/json")
-	//
-	//b, err := ioutil.ReadAll(r.Body)
-	//defer r.Body.Close()
-	//if err != nil {
-	//	utils.Error(w, errors.New(`"`+err.Error()+`"`))
-	//	return
-	//}
-	//
-	//// Check recaptcha
-	//err = recaptcha.VerifyCaptcha(b)
-	//if err != nil {
-	//	utils.Error(w, errors.New(`{"captcha":`+err.Error()+`}`))
-	//	return
-	//}
+	w.Header().Set("Content-Type", "application/json")
+
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	// Check recaptcha
+	err = recaptcha.VerifyCaptcha(b)
+	if err != nil {
+		utils.Error(w, errors.New(`{"captcha":`+err.Error()+`}`))
+		return
+	}
+
+	// And now set a new body, which will simulate the same data we read:
+	r.Body = ioutil.NopCloser(bytes.NewBuffer(b))
 
 	user.Create(w, r)
 }
