@@ -44,8 +44,12 @@ services:
     restart: always
     environment:
       PORT: 4070
-      MONGO_URL: mongo/auth
+      MONGO_URL: "mongo/auth"
       RECAPTCHA_PRIVATE_KEY: "secretKey"
+      SMTP_USERNAME: "mailAddress"
+      SMTP_PASSWORD: "secretPass"
+      SMTP_SERVER: "smtp.gmail.com"
+      SMTP_PORT: 465
 #    ports:
 #    - "4070:4070"
     depends_on:

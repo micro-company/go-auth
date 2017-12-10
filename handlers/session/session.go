@@ -13,6 +13,7 @@ import (
 	"github.com/micro-company/go-auth/utils/recaptcha"
 
 	"github.com/go-chi/chi"
+	"github.com/micro-company/go-auth/handlers/mail"
 	"github.com/micro-company/go-auth/handlers/user"
 	"github.com/micro-company/go-auth/models/session"
 	"github.com/micro-company/go-auth/models/user"
@@ -156,10 +157,22 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Send email
+	data := mail.RecoveryData{
+		Mail: user.Mail,
+		Url:  "http://example.com/auth/recovery/secretToken",
+	}
+	err = mail.Recovery(data)
+	if err != nil {
+		utils.Error(w, errors.New("failed to send message"))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{}`))
+
 	// TODO: Create template mail.tpl
 	// TODO: generate link for recovery pass (save URL and TTL to redis)
-	// TODO: Load template (use mail.tpl) and render valid html
-	// TODO: send mail
 
 	// TODO: FRONT-END
 	// TODO: router `/recovery/:id`

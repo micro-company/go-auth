@@ -1,8 +1,8 @@
 package db
 
 import (
-	"github.com/micro-company/go-auth/utils"
 	"github.com/go-redis/redis"
+	"github.com/micro-company/go-auth/utils"
 )
 
 var (
