@@ -171,7 +171,6 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{}`))
 
-	// TODO: Create template mail.tpl
 	// TODO: generate link for recovery pass (save URL and TTL to redis)
 
 	// TODO: FRONT-END
