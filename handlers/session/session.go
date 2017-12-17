@@ -158,23 +158,26 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get refresh token
+	timeDuration := time.Now().Add(time.Hour * 1).Unix()
+	recoveryLink, err := sessionModel.NewRecoveryLink(timeDuration)
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
 	// Send mail
 	conn := grpcServer.GetConnClient()
 	c := pb.NewMailClient(conn)
 	_, err = c.SendMail(context.Background(), &pb.MailRequest{
 		Template: "recovery",
 		Mail:     user.Mail,
-		Url:      "http://example.com/auth/recovery/secretToken",
+		Url:      "http://localhost:3000/auth/recovery/" + recoveryLink,
 	})
 	if err != nil {
 		utils.Error(w, errors.New("\"failed to send message\""))
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{}`))
-
-	// TODO: generate link for recovery pass (save URL and TTL to redis)
 
 	// TODO: FRONT-END
 	// TODO: router `/recovery/:id`
@@ -188,6 +191,9 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 	// TODO:         -> return success
 	// TODO: Send mail (theme: New password)
 	// TODO: Delete `/recovery/:id` from DB
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{}`))
 }
 
 func Refresh(w http.ResponseWriter, r *http.Request) {

@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/micro-company/go-auth/db"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"github.com/micro-company/go-auth/db"
 	"github.com/sirupsen/logrus"
 )
 
@@ -88,6 +88,16 @@ func NewRefreshToken(timeDuration int64) (string, error) {
 	return refreshToken.String(), nil
 }
 
+func NewRecoveryLink(timeDuration int64) (string, error) {
+	refreshToken, _ := uuid.NewUUID()
+	err := db.Redis.Set(refreshToken.String(), 0, time.Duration(timeDuration)).Err()
+	if err != nil {
+		return "", err
+	}
+
+	return refreshToken.String(), nil
+}
+
 func Delete(token string) error {
 	err := db.Redis.Del(token).Err()
 	if err != nil {
@@ -116,7 +126,7 @@ func VerifyToken(tokenString string) (*jwt.Token, error) {
 
 func CheckRefreshToken(token string) (bool, error) {
 	value := db.Redis.Get(token)
-	if value.Err() != nil  {
+	if value.Err() != nil {
 		return false, value.Err()
 	}
 
