@@ -22,7 +22,6 @@ func init() {
 // Error handler
 func Error(w http.ResponseWriter, err error) {
 	w.WriteHeader(http.StatusBadRequest)
-	log.Error(err)
 
 	err_str := `{
 		"error": ` + err.Error() + `

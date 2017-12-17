@@ -36,10 +36,11 @@ func init() {
 func Routes() chi.Router {
 	r := chi.NewRouter()
 
-	r.Get("/debug/:token", Debug)
+	r.Get("/debug/{token}", Debug)
 	r.Post("/", Login)
 	r.Post("/new", Registration)
 	r.Post("/recovery", Recovery)
+	r.Post("/recovery/{token}", RecoveryByToken)
 	r.Delete("/", Logout)
 
 	return r
@@ -179,13 +180,15 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: FRONT-END
-	// TODO: router `/recovery/:id`
-	// TODO: write new password
-	// TODO: request to BACK-END
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{}`))
+}
+
+func RecoveryByToken(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 
 	// TODO: BACK-END
-	// TODO: search user
+	// TODO: search user by recoveryToken
 	// TODO: id false -> return error
 	// TODO:    true -> save new password(hash)
 	// TODO:         -> return success
