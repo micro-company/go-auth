@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
@@ -79,6 +80,7 @@ func main() {
 	r.Use(middleware.Heartbeat("/healthz"))
 	r.Use(utils.NewStructuredLogger(log))
 	r.Use(middleware.Recoverer)
+	r.NotFound(NotFoundHandler)
 
 	r.Mount("/users", user.Routes())
 	r.Mount("/auth", session.Routes())
@@ -86,4 +88,12 @@ func main() {
 	// start HTTP-server
 	log.Info("Run services on port " + PORT)
 	http.ListenAndServe(":"+PORT, r)
+}
+
+func NotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNotFound)
+
+	utils.Error(w, errors.New("\"not found\""))
+	return
 }
