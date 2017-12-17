@@ -172,7 +172,7 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 	_, err = c.SendMail(context.Background(), &pb.MailRequest{
 		Template: "recovery",
 		Mail:     user.Mail,
-		Url:      "http://localhost:3000/auth/recovery/" + recoveryLink,
+		Url:      "http://localhost:3000/recovery/" + recoveryLink,
 	})
 	if err != nil {
 		utils.Error(w, errors.New("\"failed to send message\""))
