@@ -2,18 +2,19 @@ package session
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"net/http"
 	"time"
 
+	pb "github.com/micro-company/go-auth/grpc/mail"
+	grpcServer "github.com/micro-company/go-auth/grpc/server"
 	"github.com/micro-company/go-auth/utils/crypto"
-
 	"github.com/micro-company/go-auth/utils/recaptcha"
 
 	"github.com/go-chi/chi"
-	"github.com/micro-company/go-auth/handlers/mail"
 	"github.com/micro-company/go-auth/handlers/user"
 	"github.com/micro-company/go-auth/models/session"
 	"github.com/micro-company/go-auth/models/user"
@@ -157,14 +158,16 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send email
-	data := mail.RecoveryData{
-		Mail: user.Mail,
-		Url:  "http://example.com/auth/recovery/secretToken",
-	}
-	err = mail.Recovery(data)
+	// Send mail
+	conn := grpcServer.GetConnClient()
+	c := pb.NewMailClient(conn)
+	_, err = c.SendMail(context.Background(), &pb.MailRequest{
+		Template: "recovery",
+		Mail:     user.Mail,
+		Url:      "http://example.com/auth/recovery/secretToken",
+	})
 	if err != nil {
-		utils.Error(w, errors.New("failed to send message"))
+		utils.Error(w, errors.New("\"failed to send message\""))
 		return
 	}
 

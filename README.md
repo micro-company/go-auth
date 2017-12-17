@@ -17,9 +17,13 @@ Auth micro-service
 
 ![Schema auth-service](docs/schema.png)
 
-### RUN
+### Getting start
 
 ```
+go get -u github.com/golang/protobuf/proto
+
+protoc -I grpc/mail/ grpc/mail/mail.proto --go_out=plugins=grpc:grpc/mail
+
 docker-compose build
 docker-compose up
 ```

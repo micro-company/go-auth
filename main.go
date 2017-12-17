@@ -18,7 +18,9 @@ import (
 	"github.com/uber/jaeger-client-go/config"
 )
 
-var log = logrus.New()
+var (
+	log = logrus.New()
+)
 
 func init() {
 	// Logging =================================================================
@@ -33,7 +35,6 @@ func init() {
 }
 
 func main() {
-
 	// Get configuration =======================================================
 	PORT := utils.Getenv("PORT", "4070")
 
