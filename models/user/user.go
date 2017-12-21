@@ -14,11 +14,13 @@ const (
 
 // User model
 type User struct {
-	Id        bson.ObjectId `json:"id" bson:"_id,omitempty"`
-	Mail      string        `json:"mail" bson:"mail,omitempty"`
-	Password  string        `json:"password" bson:"password,omitempty"`
-	CreatedAt time.Time     `json:"created_at" bson:"created_at,omitempty"`
-	UpdatedAt time.Time     `json:"updated_at" bson:"updated_at,omitempty"`
+	Id            *bson.ObjectId `json:"id" bson:"_id,omitempty"`
+	Mail          string         `json:"mail" bson:"mail,omitempty"`
+	Password      string         `json:"password" bson:"password,omitempty"`
+	PasswordRetry string         `json:"retryPassword" bson:"-"`
+	RecoveryToken string         `json:"recoveryToken" bson:"-"`
+	CreatedAt     *time.Time     `json:"created_at" bson:"created_at,omitempty"`
+	UpdatedAt     *time.Time     `json:"updated_at" bson:"updated_at,omitempty"`
 }
 
 func List() (error, []User) {
@@ -41,13 +43,13 @@ func Find(user User) (error, []User) {
 	return nil, users
 }
 
-func FindOne(user User) (error, User) {
-	err := db.Session.DB("auth").C(CollectionUser).Find(&user).One(&user)
+func FindOne(user User) (User, error) {
+	err := db.Session.DB("auth").C(CollectionUser).Find(user).One(&user)
 	if err != nil {
-		return err, user
+		return user, err
 	}
 
-	return nil, user
+	return user, nil
 }
 
 func Add(user User) (error, User) {

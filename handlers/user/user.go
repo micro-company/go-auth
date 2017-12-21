@@ -89,10 +89,11 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := bson.NewObjectId()
-	user.Id = id
+	user.Id = &id
 	user.Password, _ = crypto.HashPassword(user.Password)
-	user.CreatedAt = time.Now()
-	user.UpdatedAt = time.Now()
+	time := time.Now()
+	user.CreatedAt = &time
+	user.UpdatedAt = &time
 
 	err, user = userModel.Add(user)
 	if err != nil {
@@ -137,9 +138,9 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user.Id = bson.ObjectIdHex(userId)
+	*user.Id = bson.ObjectIdHex(userId)
 	user.Password, _ = crypto.HashPassword(user.Password)
-	user.UpdatedAt = time.Now()
+	*user.UpdatedAt = time.Now()
 
 	err, user = userModel.Update(user)
 	if err != nil {

@@ -71,9 +71,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var passwordUser = user.Password
-	var searchUser = userModel.User{}
-	searchUser.Mail = user.Mail
-	err, user = userModel.FindOne(searchUser)
+	var searchUser = userModel.User{Mail: user.Mail}
+	user, err = userModel.FindOne(searchUser)
 	if err != nil {
 		utils.Error(w, errors.New(`{"mail":"incorrect mail or password"}`))
 		return
@@ -159,9 +158,18 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// search user by mail
+	searchUser := userModel.User{}
+	searchUser.Mail = user.Mail
+	user, err = userModel.FindOne(searchUser)
+	if err != nil {
+		utils.Error(w, errors.New(`{"mail":"incorrect mail"}`))
+		return
+	}
+
 	// get refresh token
 	timeDuration := time.Now().Add(time.Hour * 1).Unix()
-	recoveryLink, err := sessionModel.NewRecoveryLink(timeDuration)
+	recoveryLink, err := sessionModel.NewRecoveryLink(timeDuration, string(*user.Id))
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
@@ -187,8 +195,30 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 func RecoveryByToken(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	b, err := ioutil.ReadAll(r.Body)
+	defer r.Body.Close()
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	// Check recaptcha
+	err = recaptcha.VerifyCaptcha(b)
+	if err != nil {
+		utils.Error(w, errors.New(`{"captcha":`+err.Error()+`}`))
+		return
+	}
+
+	var user userModel.User
+	err = json.Unmarshal(b, &user)
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
 	// TODO: BACK-END
-	// TODO: search user by recoveryToken
+	userId, _ := sessionModel.GetValueByKey(user.RecoveryToken)
+	log.Info("UserId", userId)
 	// TODO: id false -> return error
 	// TODO:    true -> save new password(hash)
 	// TODO:         -> return success

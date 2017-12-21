@@ -88,9 +88,9 @@ func NewRefreshToken(timeDuration int64) (string, error) {
 	return refreshToken.String(), nil
 }
 
-func NewRecoveryLink(timeDuration int64) (string, error) {
+func NewRecoveryLink(timeDuration int64, value string) (string, error) {
 	refreshToken, _ := uuid.NewUUID()
-	err := db.Redis.Set(refreshToken.String(), 0, time.Duration(timeDuration)).Err()
+	err := db.Redis.Set(refreshToken.String(), value, time.Duration(timeDuration)).Err()
 	if err != nil {
 		return "", err
 	}
@@ -136,4 +136,18 @@ func CheckRefreshToken(token string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func GetValueByKey(token string) (string, error) {
+	value := db.Redis.Get(token)
+	if value.Err() != nil {
+		return "", value.Err()
+	}
+
+	status, err := value.Result()
+	if err != nil && status != "true" {
+		return "", err
+	}
+
+	return status, nil
 }
