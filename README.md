@@ -36,6 +36,7 @@ docker-compose up
 | MONGO_URL             | localhost/auth            |
 | REDIS_URL             | redis://localhost:6379    |
 | RECAPTCHA_PRIVATE_KEY | secretKey                 |
+| ENABLE_CAPTCHA        | false                      |
 
 ### Generation cert
 

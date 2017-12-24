@@ -13,8 +13,8 @@ import (
 
 	pb "github.com/micro-company/go-auth/grpc/mail"
 	grpcServer "github.com/micro-company/go-auth/grpc/server"
+	"github.com/micro-company/go-auth/middleware"
 	"github.com/micro-company/go-auth/utils/crypto"
-	"github.com/micro-company/go-auth/utils/recaptcha"
 
 	"github.com/go-chi/chi"
 	"github.com/micro-company/go-auth/handlers/user"
@@ -37,6 +37,7 @@ func init() {
 // Routes creates a REST router
 func Routes() chi.Router {
 	r := chi.NewRouter()
+	r.Use(middleware.Captcha)
 
 	r.Get("/debug/{token}", Debug)
 	r.Post("/", Login)
@@ -62,13 +63,6 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
-		return
-	}
-
-	// Check recaptcha
-	err = recaptcha.VerifyCaptcha(b)
-	if err != nil {
-		utils.Error(w, errors.New(`{"captcha":`+err.Error()+`}`))
 		return
 	}
 
@@ -121,13 +115,6 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
-		return
-	}
-
-	// Check recaptcha
-	err = recaptcha.VerifyCaptcha(b)
-	if err != nil {
-		utils.Error(w, errors.New(`{"captcha":`+err.Error()+`}`))
 		return
 	}
 
@@ -227,13 +214,6 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check recaptcha
-	err = recaptcha.VerifyCaptcha(b)
-	if err != nil {
-		utils.Error(w, errors.New(`{"captcha":`+err.Error()+`}`))
-		return
-	}
-
 	var user userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
@@ -281,13 +261,6 @@ func RecoveryByToken(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
-		return
-	}
-
-	// Check recaptcha
-	err = recaptcha.VerifyCaptcha(b)
-	if err != nil {
-		utils.Error(w, errors.New(`{"captcha":`+err.Error()+`}`))
 		return
 	}
 
