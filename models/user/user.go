@@ -1,6 +1,7 @@
 package userModel
 
 import (
+	"errors"
 	"time"
 
 	"github.com/micro-company/go-auth/db"
@@ -52,10 +53,26 @@ func FindOne(user User) (User, error) {
 	return user, nil
 }
 
-func Add(user User) (error, User) {
-	err := db.Session.DB("auth").C(CollectionUser).Insert(user)
+func FindCount(user User) (int, error) {
+	count, err := db.Session.DB("auth").C(CollectionUser).Find(user).Count()
 	if err != nil {
+		return count, err
+	}
+
+	return count, nil
+}
+
+func Add(user User) (error, User) {
+	var checkUser User
+	checkUser.Mail = user.Mail
+	result, err := FindCount(checkUser)
+	if result > 0 {
 		return err, user
+	}
+
+	err = db.Session.DB("auth").C(CollectionUser).Insert(user)
+	if err != nil {
+		return errors.New(`{"mail":"need uniq mail"}`), user
 	}
 
 	return nil, user
@@ -64,6 +81,7 @@ func Add(user User) (error, User) {
 func Update(user User) (error, User) {
 	UpdatedAt := time.Now()
 	user.UpdatedAt = &UpdatedAt
+	user.Mail = nil // prohibit changing address
 
 	err := db.Session.DB("auth").C(CollectionUser).UpdateId(user.Id, bson.M{"$set": user})
 	if err != nil {
