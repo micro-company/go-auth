@@ -15,7 +15,7 @@ const (
 // User model
 type User struct {
 	Id            *bson.ObjectId `json:"id" bson:"_id,omitempty"`
-	Mail          string         `json:"mail" bson:"mail,omitempty"`
+	Mail          *string        `json:"mail" bson:"mail,omitempty"`
 	Password      string         `json:"password" bson:"password,omitempty"`
 	PasswordRetry string         `json:"retryPassword" bson:"-"`
 	RecoveryToken string         `json:"recoveryToken" bson:"-"`
@@ -62,7 +62,10 @@ func Add(user User) (error, User) {
 }
 
 func Update(user User) (error, User) {
-	err := db.Session.DB("auth").C(CollectionUser).UpdateId(user.Id, user)
+	UpdatedAt := time.Now()
+	user.UpdatedAt = &UpdatedAt
+
+	err := db.Session.DB("auth").C(CollectionUser).UpdateId(user.Id, bson.M{"$set": user})
 	if err != nil {
 		return err, user
 	}

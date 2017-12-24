@@ -11,7 +11,7 @@ var (
 
 func ConnectToRedis() {
 	// Get configuration
-	REDIS_URL := utils.Getenv("REDIS_URL", "redis://localhost:6379")
+	REDIS_URL := utils.Getenv("REDIS_URL", "redis://localhost:6379/1")
 	opt, err := redis.ParseURL(REDIS_URL)
 	if err != nil {
 		panic(err)

@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"gopkg.in/mgo.v2/bson"
+
 	pb "github.com/micro-company/go-auth/grpc/mail"
 	grpcServer "github.com/micro-company/go-auth/grpc/server"
 	"github.com/micro-company/go-auth/utils/crypto"
@@ -85,7 +87,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create JWT token
-	timeDuration := time.Now().Add(time.Minute * 5).Unix()
+	timeTTL := time.Minute * 5
+	timeDuration := time.Now().Add(timeTTL).Unix()
 
 	// get access token
 	tokenString, err := sessionModel.NewAccessToken(timeDuration)
@@ -95,7 +98,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get refresh token
-	refreshToken, err := sessionModel.NewRefreshToken(timeDuration)
+	refreshToken, err := sessionModel.NewRefreshToken(timeTTL)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
@@ -134,6 +137,86 @@ func Registration(w http.ResponseWriter, r *http.Request) {
 	user.Create(w, r)
 }
 
+func Logout(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var Authorization = r.Header.Get("Authorization")
+	if Authorization == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		utils.Error(w, errors.New(`"not auth"`))
+		return
+	}
+
+	token, err := sessionModel.VerifyToken(Authorization)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	if !token.Valid {
+		w.WriteHeader(http.StatusUnauthorized)
+		utils.Error(w, errors.New(`"token invalid"`))
+		return
+	}
+
+	err = sessionModel.Delete(Authorization)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{}`))
+}
+
+func Refresh(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var TOKEN_REFRESH = r.Header.Get("TOKEN_REFRESH")
+	if TOKEN_REFRESH == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		utils.Error(w, errors.New(`"not auth"`))
+		return
+	}
+
+	// Chech REFRESH TOKEN
+	status, err := sessionModel.CheckRefreshToken(TOKEN_REFRESH)
+	if err != nil || status != true {
+		w.WriteHeader(http.StatusUnauthorized)
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	// Create JWT token
+	TTL := time.Minute * 5
+	timeDuration := time.Now().Add(TTL).Unix()
+
+	// get access token
+	tokenString, err := sessionModel.NewAccessToken(timeDuration)
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	// get refresh token
+	refreshToken, err := sessionModel.NewRefreshToken(TTL)
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+
+	w.Header().Set("Authorization", tokenString)
+	w.WriteHeader(http.StatusCreated)
+	w.Write([]byte(`{
+		"tokens": {
+			"access": "` + tokenString + `",
+			"refresh": "` + refreshToken + `"
+		}
+	}`))
+}
+
 func Recovery(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
@@ -168,8 +251,7 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get refresh token
-	timeDuration := time.Now().Add(time.Hour * 1).Unix()
-	recoveryLink, err := sessionModel.NewRecoveryLink(timeDuration, string(*user.Id))
+	recoveryLink, err := sessionModel.NewRecoveryLink(user.Id.Hex())
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
@@ -180,7 +262,7 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 	c := pb.NewMailClient(conn)
 	_, err = c.SendMail(context.Background(), &pb.MailRequest{
 		Template: "recovery",
-		Mail:     user.Mail,
+		Mail:     *user.Mail,
 		Url:      "http://localhost:3000/recovery/" + recoveryLink,
 	})
 	if err != nil {
@@ -216,93 +298,33 @@ func RecoveryByToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: BACK-END
+	// check correct a password
+	if user.Password != user.PasswordRetry {
+		utils.Error(w, errors.New(`{"retryPassword":"incorrect new password"}`))
+		return
+	}
+
 	userId, _ := sessionModel.GetValueByKey(user.RecoveryToken)
-	log.Info("UserId", userId)
-	// TODO: id false -> return error
-	// TODO:    true -> save new password(hash)
-	// TODO:         -> return success
+	if len(userId) == 0 {
+		utils.Error(w, errors.New(`"not found"`))
+		return
+	}
+
+	t := bson.ObjectIdHex(userId)
+	user.Id = &t
+	user.Password, _ = crypto.HashPassword(user.Password)
+
+	err, user = userModel.Update(user)
+	if err != nil {
+		utils.Error(w, errors.New(`"`+err.Error()+`"`))
+		return
+	}
+	err = sessionModel.Delete(user.RecoveryToken)
+	if err != nil {
+		utils.Error(w, errors.New("not found"))
+		return
+	}
 	// TODO: Send mail (theme: New password)
-	// TODO: Delete `/recovery/:id` from DB
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{}`))
-}
-
-func Refresh(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	var TOKEN_REFRESH = r.Header.Get("TOKEN_REFRESH")
-	if TOKEN_REFRESH == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		utils.Error(w, errors.New(`"not auth"`))
-		return
-	}
-
-	// Chech REFRESH TOKEN
-	status, err := sessionModel.CheckRefreshToken(TOKEN_REFRESH)
-	if err != nil || status != true {
-		w.WriteHeader(http.StatusUnauthorized)
-		utils.Error(w, errors.New(`"`+err.Error()+`"`))
-		return
-	}
-
-	// Create JWT token
-	timeDuration := time.Now().Add(time.Minute * 5).Unix()
-
-	// get access token
-	tokenString, err := sessionModel.NewAccessToken(timeDuration)
-	if err != nil {
-		utils.Error(w, errors.New(`"`+err.Error()+`"`))
-		return
-	}
-
-	// get refresh token
-	refreshToken, err := sessionModel.NewRefreshToken(timeDuration)
-	if err != nil {
-		utils.Error(w, errors.New(`"`+err.Error()+`"`))
-		return
-	}
-
-	w.Header().Set("Authorization", tokenString)
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(`{
-		"tokens": {
-			"access": "` + tokenString + `",
-			"refresh": "` + refreshToken + `"
-		}
-	}`))
-}
-
-func Logout(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	var Authorization = r.Header.Get("Authorization")
-	if Authorization == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		utils.Error(w, errors.New(`"not auth"`))
-		return
-	}
-
-	token, err := sessionModel.VerifyToken(Authorization)
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		utils.Error(w, errors.New(`"`+err.Error()+`"`))
-		return
-	}
-
-	if !token.Valid {
-		w.WriteHeader(http.StatusUnauthorized)
-		utils.Error(w, errors.New(`"token invalid"`))
-		return
-	}
-
-	err = sessionModel.Delete(Authorization)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		utils.Error(w, errors.New(`"`+err.Error()+`"`))
-		return
-	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{}`))

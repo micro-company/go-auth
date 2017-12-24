@@ -140,7 +140,6 @@ func Update(w http.ResponseWriter, r *http.Request) {
 
 	*user.Id = bson.ObjectIdHex(userId)
 	user.Password, _ = crypto.HashPassword(user.Password)
-	*user.UpdatedAt = time.Now()
 
 	err, user = userModel.Update(user)
 	if err != nil {
