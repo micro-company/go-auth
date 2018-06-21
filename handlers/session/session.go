@@ -44,6 +44,7 @@ func Routes() chi.Router {
 	r.Post("/new", Registration)
 	r.Post("/recovery", Recovery)
 	r.Post("/recovery/{token}", RecoveryByToken)
+	r.Post("/refresh", Refresh)
 	r.Delete("/", Logout)
 
 	return r
@@ -81,7 +82,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create JWT token
-	timeTTL := time.Minute * 5
+	timeTTL := time.Minute * 1
 	timeDuration := time.Now().Add(timeTTL).Unix()
 
 	// get access token
