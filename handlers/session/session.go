@@ -162,7 +162,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 func Refresh(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	var TOKEN_REFRESH = r.Header.Get("TOKEN_REFRESH")
+	var TOKEN_REFRESH = r.Header.Get("Authorization")
 	if TOKEN_REFRESH == "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		utils.Error(w, errors.New(`"not auth"`))
