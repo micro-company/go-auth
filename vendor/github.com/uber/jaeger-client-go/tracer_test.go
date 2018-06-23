@@ -16,12 +16,14 @@ package jaeger
 
 import (
 	"io"
+	"net/http"
 	"testing"
 	"time"
 
 	"github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"github.com/uber/jaeger-lib/metrics"
 	"github.com/uber/jaeger-lib/metrics/testutils"
@@ -90,9 +92,8 @@ func (s *tracerSuite) TestBeginRootSpan() {
 	s.NotNil(ss.duration)
 
 	testutils.AssertCounterMetrics(s.T(), s.metricsFactory, []testutils.ExpectedMetric{
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "started"}, Value: 1},
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "finished"}, Value: 1},
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "sampling", "sampled": "y"}, Value: 1},
+		{Name: "jaeger.finished_spans", Value: 1},
+		{Name: "jaeger.started_spans", Tags: map[string]string{"sampled": "y"}, Value: 1},
 		{Name: "jaeger.traces", Tags: map[string]string{"sampled": "y", "state": "started"}, Value: 1},
 	}...)
 }
@@ -114,10 +115,9 @@ func (s *tracerSuite) TestStartChildSpan() {
 	s.NotNil(sp2.(*Span).duration)
 	sp1.Finish()
 	testutils.AssertCounterMetrics(s.T(), s.metricsFactory, []testutils.ExpectedMetric{
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "sampling", "sampled": "y"}, Value: 2},
+		{Name: "jaeger.started_spans", Tags: map[string]string{"sampled": "y"}, Value: 2},
 		{Name: "jaeger.traces", Tags: map[string]string{"sampled": "y", "state": "started"}, Value: 1},
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "started"}, Value: 2},
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "finished"}, Value: 2},
+		{Name: "jaeger.finished_spans", Value: 2},
 	}...)
 }
 
@@ -146,10 +146,9 @@ func (s *tracerSuite) TestStartSpanWithMultipleReferences() {
 	sp2.Finish()
 	sp1.Finish()
 	testutils.AssertCounterMetrics(s.T(), s.metricsFactory, []testutils.ExpectedMetric{
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "sampling", "sampled": "y"}, Value: 4},
+		{Name: "jaeger.started_spans", Tags: map[string]string{"sampled": "y"}, Value: 4},
 		{Name: "jaeger.traces", Tags: map[string]string{"sampled": "y", "state": "started"}, Value: 3},
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "started"}, Value: 4},
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "finished"}, Value: 4},
+		{Name: "jaeger.finished_spans", Value: 4},
 	}...)
 	assert.Len(s.T(), sp4.(*Span).references, 3)
 }
@@ -167,10 +166,9 @@ func (s *tracerSuite) TestStartSpanWithOnlyFollowFromReference() {
 	s.NotNil(sp2.(*Span).duration)
 	sp1.Finish()
 	testutils.AssertCounterMetrics(s.T(), s.metricsFactory, []testutils.ExpectedMetric{
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "sampling", "sampled": "y"}, Value: 2},
+		{Name: "jaeger.started_spans", Tags: map[string]string{"sampled": "y"}, Value: 2},
 		{Name: "jaeger.traces", Tags: map[string]string{"sampled": "y", "state": "started"}, Value: 1},
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "started"}, Value: 2},
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "finished"}, Value: 2},
+		{Name: "jaeger.finished_spans", Value: 2},
 	}...)
 	assert.Len(s.T(), sp2.(*Span).references, 1)
 }
@@ -198,9 +196,8 @@ func (s *tracerSuite) TestTraceStartedOrJoinedMetrics() {
 		s.Equal(test.sampled, sp2.Context().(SpanContext).IsSampled())
 
 		testutils.AssertCounterMetrics(s.T(), s.metricsFactory, []testutils.ExpectedMetric{
-			{Name: "jaeger.spans", Tags: map[string]string{"group": "sampling", "sampled": test.label}, Value: 3},
-			{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "started"}, Value: 3},
-			{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "finished"}, Value: 3},
+			{Name: "jaeger.started_spans", Tags: map[string]string{"sampled": test.label}, Value: 3},
+			{Name: "jaeger.finished_spans", Value: 3},
 			{Name: "jaeger.traces", Tags: map[string]string{"sampled": test.label, "state": "started"}, Value: 1},
 			{Name: "jaeger.traces", Tags: map[string]string{"sampled": test.label, "state": "joined"}, Value: 1},
 		}...)
@@ -317,51 +314,6 @@ func TestGen128Bit(t *testing.T) {
 	assert.True(t, traceID.Low != 0)
 }
 
-func TestHighTraceIDGenerator(t *testing.T) {
-	id := uint64(12345)
-	calledGenerator := false
-	highTraceIDGenerator := func() uint64 {
-		calledGenerator = true
-		return id
-	}
-
-	tracer, tc := NewTracer("x", NewConstSampler(true), NewNullReporter(), TracerOptions.HighTraceIDGenerator(highTraceIDGenerator), TracerOptions.Gen128Bit(true))
-	defer tc.Close()
-
-	span := tracer.StartSpan("test", opentracing.ChildOf(emptyContext))
-	defer span.Finish()
-	traceID := span.Context().(SpanContext).TraceID()
-	assert.Equal(t, id, traceID.High)
-	assert.True(t, calledGenerator)
-}
-
-// TODO: Remove mockLogger in favor of testutils/logger.go once it is refactored
-// from jaeger into jaeger-lib.
-
-type mockLogger struct {
-	msg string
-}
-
-func (l *mockLogger) Error(msg string) {
-	l.msg = msg
-}
-
-func (l *mockLogger) Infof(msg string, args ...interface{}) {
-}
-
-func TestHighTraceIDGeneratorNotGen128Bit(t *testing.T) {
-	highTraceIDGenerator := func() uint64 {
-		return 0
-	}
-	logger := &mockLogger{}
-	NewTracer("x", NewConstSampler(true), NewNullReporter(), TracerOptions.HighTraceIDGenerator(highTraceIDGenerator), TracerOptions.Gen128Bit(false), TracerOptions.Logger(logger))
-	msg := "Overriding high trace ID generator but not generating " +
-		"128 bit trace IDs, consider enabling the \"Gen128Bit\" option"
-	assert.Equal(t,
-		msg,
-		logger.msg)
-}
-
 func TestZipkinSharedRPCSpan(t *testing.T) {
 	tracer, tc := NewTracer("x", NewConstSampler(true), NewNullReporter(), TracerOptions.ZipkinSharedRPCSpan(false))
 
@@ -382,6 +334,71 @@ func TestZipkinSharedRPCSpan(t *testing.T) {
 	sp2.Finish()
 	sp1.Finish()
 	tc.Close()
+}
+
+type testDebugThrottler struct {
+	process Process
+}
+
+func (t *testDebugThrottler) SetProcess(process Process) {
+	t.process = process
+}
+
+func (t *testDebugThrottler) Close() error {
+	return nil
+}
+
+func (t *testDebugThrottler) IsAllowed(operation string) bool {
+	return true
+}
+
+func TestDebugThrottler(t *testing.T) {
+	throttler := &testDebugThrottler{}
+	opentracingTracer, tc := NewTracer("x", NewConstSampler(true), NewNullReporter(), TracerOptions.DebugThrottler(throttler))
+	assert.NoError(t, tc.Close())
+	tracer := opentracingTracer.(*Tracer)
+	assert.Equal(t, tracer.process, throttler.process)
+}
+
+func TestThrottling_SamplingPriority(t *testing.T) {
+	tracer, closer := NewTracer("DOOP", NewConstSampler(true), NewNullReporter())
+
+	sp1 := tracer.StartSpan("s1", opentracing.Tags{string(ext.SamplingPriority): 0}).(*Span)
+	assert.False(t, sp1.context.IsDebug())
+
+	sp1 = tracer.StartSpan("s1", opentracing.Tags{string(ext.SamplingPriority): uint16(1)}).(*Span)
+	assert.True(t, sp1.context.IsDebug())
+
+	assert.NotNil(t, findDomainTag(sp1, "sampling.priority"), "sampling.priority tag should be added")
+	closer.Close()
+
+	tracer, closer = NewTracer("DOOP", NewConstSampler(true), NewNullReporter(),
+		TracerOptions.DebugThrottler(testThrottler{allowAll: false}))
+	defer closer.Close()
+
+	sp1 = tracer.StartSpan("s1", opentracing.Tags{string(ext.SamplingPriority): uint16(1)}).(*Span)
+	ext.SamplingPriority.Set(sp1, 1)
+	assert.False(t, sp1.context.IsDebug(), "debug should not be allowed by the throttler")
+}
+
+func TestThrottling_DebugHeader(t *testing.T) {
+	tracer, closer := NewTracer("DOOP", NewConstSampler(true), NewNullReporter())
+
+	h := http.Header{}
+	h.Add(JaegerDebugHeader, "x")
+	ctx, err := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(h))
+	require.NoError(t, err)
+
+	sp := tracer.StartSpan("root", opentracing.ChildOf(ctx)).(*Span)
+	assert.True(t, sp.context.IsDebug())
+	closer.Close()
+
+	tracer, closer = NewTracer("DOOP", NewConstSampler(true), NewNullReporter(),
+		TracerOptions.DebugThrottler(testThrottler{allowAll: false}))
+	defer closer.Close()
+
+	sp = tracer.StartSpan("root", opentracing.ChildOf(ctx)).(*Span)
+	assert.False(t, sp.context.IsDebug(), "debug should not be allowed by the throttler")
 }
 
 type dummyPropagator struct{}

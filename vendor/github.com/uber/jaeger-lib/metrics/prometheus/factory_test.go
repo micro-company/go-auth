@@ -34,6 +34,17 @@ func TestOptions(t *testing.T) {
 	assert.NotNil(t, f1)
 }
 
+func TestSeparator(t *testing.T) {
+	registry := prometheus.NewPedanticRegistry()
+	f1 := New(WithRegisterer(registry), WithSeparator(SeparatorColon))
+	c1 := f1.Namespace("bender", nil).Counter("rodriguez", map[string]string{"a": "b"})
+	c1.Inc(1)
+	snapshot, err := registry.Gather()
+	require.NoError(t, err)
+	m1 := findMetric(t, snapshot, "bender:rodriguez", map[string]string{"a": "b"})
+	assert.EqualValues(t, 1, m1.GetCounter().GetValue(), "%+v", m1)
+}
+
 func TestCounter(t *testing.T) {
 	registry := prometheus.NewPedanticRegistry()
 	f1 := New(WithRegisterer(registry))
@@ -52,10 +63,10 @@ func TestCounter(t *testing.T) {
 	snapshot, err := registry.Gather()
 	require.NoError(t, err)
 
-	m1 := findMetric(t, snapshot, "bender:rodriguez", map[string]string{"a": "b", "x": "y"})
+	m1 := findMetric(t, snapshot, "bender_rodriguez", map[string]string{"a": "b", "x": "y"})
 	assert.EqualValues(t, 3, m1.GetCounter().GetValue(), "%+v", m1)
 
-	m2 := findMetric(t, snapshot, "bender:rodriguez", map[string]string{"a": "b", "x": "z"})
+	m2 := findMetric(t, snapshot, "bender_rodriguez", map[string]string{"a": "b", "x": "z"})
 	assert.EqualValues(t, 7, m2.GetCounter().GetValue(), "%+v", m2)
 }
 
@@ -75,10 +86,10 @@ func TestGauge(t *testing.T) {
 	snapshot, err := registry.Gather()
 	require.NoError(t, err)
 
-	m1 := findMetric(t, snapshot, "bender:rodriguez", map[string]string{"a": "b", "x": "y"})
+	m1 := findMetric(t, snapshot, "bender_rodriguez", map[string]string{"a": "b", "x": "y"})
 	assert.EqualValues(t, 2, m1.GetGauge().GetValue(), "%+v", m1)
 
-	m2 := findMetric(t, snapshot, "bender:rodriguez", map[string]string{"a": "b", "x": "z"})
+	m2 := findMetric(t, snapshot, "bender_rodriguez", map[string]string{"a": "b", "x": "z"})
 	assert.EqualValues(t, 4, m2.GetGauge().GetValue(), "%+v", m2)
 }
 
@@ -98,7 +109,7 @@ func TestTimer(t *testing.T) {
 	snapshot, err := registry.Gather()
 	require.NoError(t, err)
 
-	m1 := findMetric(t, snapshot, "bender:rodriguez", map[string]string{"a": "b", "x": "y"})
+	m1 := findMetric(t, snapshot, "bender_rodriguez", map[string]string{"a": "b", "x": "y"})
 	assert.EqualValues(t, 2, m1.GetHistogram().GetSampleCount(), "%+v", m1)
 	assert.EqualValues(t, 3, m1.GetHistogram().GetSampleSum(), "%+v", m1)
 	for _, bucket := range m1.GetHistogram().GetBucket() {
@@ -111,7 +122,7 @@ func TestTimer(t *testing.T) {
 		}
 	}
 
-	m2 := findMetric(t, snapshot, "bender:rodriguez", map[string]string{"a": "b", "x": "z"})
+	m2 := findMetric(t, snapshot, "bender_rodriguez", map[string]string{"a": "b", "x": "z"})
 	assert.EqualValues(t, 2, m2.GetHistogram().GetSampleCount(), "%+v", m2)
 	assert.EqualValues(t, 7, m2.GetHistogram().GetSampleSum(), "%+v", m2)
 	for _, bucket := range m2.GetHistogram().GetBucket() {

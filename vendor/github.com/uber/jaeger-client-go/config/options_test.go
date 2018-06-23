@@ -28,16 +28,19 @@ import (
 func TestApplyOptions(t *testing.T) {
 	metricsFactory := metrics.NewLocalFactory(0)
 	observer := fakeObserver{}
+	sampler := &fakeSampler{}
 	contribObserver := fakeContribObserver{}
 	opts := applyOptions(
 		Metrics(metricsFactory),
 		Logger(jaeger.StdLogger),
 		Observer(observer),
+		Sampler(sampler),
 		ContribObserver(contribObserver),
 		Gen128Bit(true),
 		ZipkinSharedRPCSpan(true),
 	)
 	assert.Equal(t, jaeger.StdLogger, opts.logger)
+	assert.Equal(t, sampler, opts.sampler)
 	assert.Equal(t, metricsFactory, opts.metrics)
 	assert.Equal(t, []jaeger.Observer{observer}, opts.observers)
 	assert.Equal(t, []jaeger.ContribObserver{contribObserver}, opts.contribObservers)
@@ -59,14 +62,44 @@ func TestApplyOptionsDefaults(t *testing.T) {
 	assert.Equal(t, metrics.NullFactory, opts.metrics)
 }
 
+type fakeSampler struct {
+	lastTraceID   jaeger.TraceID
+	lastOperation string
+}
+
+func (s *fakeSampler) IsSampled(id jaeger.TraceID, operation string) (sampled bool, tags []jaeger.Tag) {
+	s.lastTraceID = id
+	s.lastOperation = operation
+
+	return true, []jaeger.Tag{}
+}
+
+func (s *fakeSampler) Close() {}
+
+func (s *fakeSampler) Equal(other jaeger.Sampler) bool {
+	return false
+}
+
 type fakeObserver struct{}
 
-func (o fakeObserver) OnStartSpan(operationName string, options opentracing.StartSpanOptions) jaeger.SpanObserver {
+func (fakeObserver) OnStartSpan(operationName string, options opentracing.StartSpanOptions) jaeger.SpanObserver {
 	return nil
 }
 
 type fakeContribObserver struct{}
 
-func (o fakeContribObserver) OnStartSpan(span opentracing.Span, operationName string, options opentracing.StartSpanOptions) (jaeger.ContribSpanObserver, bool) {
+func (fakeContribObserver) OnStartSpan(span opentracing.Span, operationName string, options opentracing.StartSpanOptions) (jaeger.ContribSpanObserver, bool) {
 	return nil, false
+}
+
+type fakeInjector struct{}
+
+func (fakeInjector) Inject(ctx jaeger.SpanContext, carrier interface{}) error {
+	return nil
+}
+
+type fakeExtractor struct{}
+
+func (fakeExtractor) Extract(carrier interface{}) (jaeger.SpanContext, error) {
+	return jaeger.SpanContext{}, nil
 }

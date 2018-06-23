@@ -21,6 +21,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// vectorCache is used to avoid creating Prometheus vectors with the same set of labels more than once.
 type vectorCache struct {
 	registerer prometheus.Registerer
 	lock       sync.Mutex

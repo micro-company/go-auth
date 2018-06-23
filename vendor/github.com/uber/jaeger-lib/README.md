@@ -13,6 +13,11 @@ The library's import path is `github.com/uber/jaeger-lib`.
 
 Please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## License
+  
+[Apache 2.0 License](./LICENSE).
+
+
 [doc-img]: https://godoc.org/github.com/uber/jaeger-lib?status.svg
 [doc]: https://godoc.org/github.com/uber/jaeger-lib
 [ci-img]: https://travis-ci.org/jaegertracing/jaeger-lib.svg?branch=master

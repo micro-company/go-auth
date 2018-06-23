@@ -119,9 +119,8 @@ func TestSpanPropagator(t *testing.T) {
 	}
 
 	testutils.AssertCounterMetrics(t, metricsFactory, []testutils.ExpectedMetric{
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "sampling", "sampled": "y"}, Value: 1 + 2*len(tests)},
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "started"}, Value: 1 + 2*len(tests)},
-		{Name: "jaeger.spans", Tags: map[string]string{"group": "lifecycle", "state": "finished"}, Value: 1 + len(tests)},
+		{Name: "jaeger.started_spans", Tags: map[string]string{"sampled": "y"}, Value: 1 + 2*len(tests)},
+		{Name: "jaeger.finished_spans", Value: 1 + len(tests)},
 		{Name: "jaeger.traces", Tags: map[string]string{"state": "started", "sampled": "y"}, Value: 1},
 		{Name: "jaeger.traces", Tags: map[string]string{"state": "joined", "sampled": "y"}, Value: len(tests)},
 	}...)
@@ -152,7 +151,7 @@ func TestDecodingError(t *testing.T) {
 	_, err := tracer.Extract(opentracing.HTTPHeaders, tmc)
 	assert.Error(t, err)
 
-	testutils.AssertCounterMetrics(t, metricsFactory, testutils.ExpectedMetric{Name: "jaeger.decoding-errors", Value: 1})
+	testutils.AssertCounterMetrics(t, metricsFactory, testutils.ExpectedMetric{Name: "jaeger.span_context_decoding_errors", Value: 1})
 }
 
 func TestBaggagePropagationHTTP(t *testing.T) {
@@ -240,24 +239,21 @@ func TestDebugCorrelationID(t *testing.T) {
 	defer closer.Close()
 
 	h := http.Header{}
-	h.Add(JaegerDebugHeader, "value1")
+	val := "value1"
+	h.Add(JaegerDebugHeader, val)
 	ctx, err := tracer.Extract(opentracing.HTTPHeaders, opentracing.HTTPHeadersCarrier(h))
 	require.NoError(t, err)
 	assert.EqualValues(t, 0, ctx.(SpanContext).parentID)
-	assert.EqualValues(t, "value1", ctx.(SpanContext).debugID)
+	assert.EqualValues(t, val, ctx.(SpanContext).debugID)
 	sp := tracer.StartSpan("root", opentracing.ChildOf(ctx)).(*Span)
 	assert.EqualValues(t, 0, sp.context.parentID)
 	assert.True(t, sp.context.traceID.IsValid())
 	assert.True(t, sp.context.IsSampled())
 	assert.True(t, sp.context.IsDebug())
-	tagFound := false
-	for _, tag := range sp.tags {
-		if tag.key == JaegerDebugHeader {
-			assert.Equal(t, "value1", tag.value)
-			tagFound = true
-		}
-	}
-	assert.True(t, tagFound)
+
+	tag := findDomainTag(sp, JaegerDebugHeader)
+	assert.NotNil(t, tag)
+	assert.Equal(t, val, tag.value)
 
 	// ensure that traces.started counter is incremented, not traces.joined
 	testutils.AssertCounterMetrics(t, metricsFactory,

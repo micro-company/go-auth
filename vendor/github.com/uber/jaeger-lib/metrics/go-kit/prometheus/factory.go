@@ -32,6 +32,17 @@ var normalizer = strings.NewReplacer(
 // NewFactory creates a new metrics factory using go-kit prometheus package.
 // buckets define the buckets into which histogram observations are counted.
 // If buckets == nil, the default value prometheus.DefBuckets is used.
+//
+// Deprecated: the recommended way is to use metrics/prometheus module:
+//
+//	import (
+//		"github.com/prometheus/client_golang/prometheus"
+//		xprom "github.com/uber/jaeger-lib/metrics/prometheus"
+//	)
+//
+//	registry := prometheus.NewPedanticRegistry()
+//	factory := xprom.New(xprom.WithRegisterer(registry))
+//
 func NewFactory(namespace, subsystem string, buckets []float64) xkit.Factory {
 	return &factory{
 		namespace: namespace,

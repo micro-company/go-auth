@@ -16,11 +16,17 @@ package log
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestLogger(t *testing.T) {
-	for _, logger := range []Logger{StdLogger, NullLogger} {
+	bbLogger := &BytesBufferLogger{}
+	for _, logger := range []Logger{StdLogger, NullLogger, bbLogger} {
 		logger.Infof("Hi %s", "there")
 		logger.Error("Bad wolf")
 	}
+	assert.Equal(t, "INFO: Hi there\nERROR: Bad wolf\n", bbLogger.String())
+	bbLogger.Flush()
+	assert.Empty(t, bbLogger.String())
 }

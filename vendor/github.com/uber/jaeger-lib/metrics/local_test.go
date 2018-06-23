@@ -23,6 +23,7 @@ func TestLocalMetrics(t *testing.T) {
 	f.Gauge("my-gauge", nil).Update(43)
 	f.Gauge("other-gauge", nil).Update(74)
 	f.Namespace("namespace", tags).Counter("my-counter", nil).Inc(7)
+	f.Namespace("ns.subns", nil).Counter("", map[string]string{"service": "a-service"}).Inc(9)
 
 	timings := map[string][]time.Duration{
 		"foo-latency": {
@@ -50,10 +51,11 @@ func TestLocalMetrics(t *testing.T) {
 	require.NotNil(t, g)
 
 	assert.Equal(t, map[string]int64{
-		"my-counter|x=y":           10,
-		"my-counter":               6,
-		"other-counter":            8,
-		"namespace.my-counter|x=y": 7,
+		"my-counter|x=y":             10,
+		"my-counter":                 6,
+		"other-counter":              8,
+		"namespace.my-counter|x=y":   7,
+		"ns.subns|service=a-service": 9,
 	}, c)
 
 	assert.Equal(t, map[string]int64{
