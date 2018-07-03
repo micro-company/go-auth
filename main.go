@@ -17,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
+	"github.com/micro-company/go-auth/handlers/oauth"
 )
 
 var (
@@ -84,6 +85,7 @@ func main() {
 
 	r.Mount("/users", user.Routes())
 	r.Mount("/auth", session.Routes())
+	r.Mount("/oauth", oauth.Routes())
 
 	// start HTTP-server
 	log.Info("Run services on port " + PORT)
