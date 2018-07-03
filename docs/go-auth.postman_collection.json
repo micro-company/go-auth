@@ -1,9 +1,10 @@
 {
+	"variables": [],
 	"info": {
 		"name": "go-auth",
 		"_postman_id": "bd6518ef-40a4-4283-e15c-aeaf3f60c6cb",
 		"description": "",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
 	"item": [
 		{
@@ -19,12 +20,34 @@
 								"type": "text/javascript",
 								"exec": [
 									"const jsonData = JSON.parse(responseBody);",
-									"postman.setEnvironmentVariable(\"TOKEN_ACCESS\", jsonData.tokens.access);"
+									"postman.setEnvironmentVariable(\"TOKEN_ACCESS\", jsonData.tokens.access);",
+									"postman.setEnvironmentVariable(\"TOKEN_REFRESH\", jsonData.tokens.refresh);"
 								]
 							}
 						}
 					],
 					"request": {
+						"url": "{{URL_API}}/auth",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"mail\": \"admin@example.com\",\n    \"password\": \"admin\"\n}"
+						},
+						"description": null
+					},
+					"response": []
+				},
+				{
+					"name": "Registration",
+					"request": {
+						"url": "{{URL_API}}/auth/new",
 						"method": "POST",
 						"header": [
 							{
@@ -34,17 +57,61 @@
 						],
 						"body": {
 							"mode": "raw",
+							"raw": "{\n    \"mail\": \"worker@example.com\",\n    \"password\": \"worker\"\n}"
+						},
+						"description": null
+					},
+					"response": []
+				},
+				{
+					"name": "Recovery account",
+					"request": {
+						"url": "{{URL_API}}/auth/recovery",
+						"method": "POST",
+						"header": [],
+						"body": {},
+						"description": null
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh token",
+					"request": {
+						"url": "{{URL_API}}/auth/refresh",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Authorization",
+								"value": "{{TOKEN_REFRESH}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
 							"raw": "{\n    \"mail\": \"admin@example.com\",\n    \"password\": \"admin\"\n}"
 						},
-						"url": {
-							"raw": "{{URL_API}}/auth",
-							"host": [
-								"{{URL_API}}"
-							],
-							"path": [
-								"auth"
-							]
-						},
+						"description": null
+					},
+					"response": []
+				},
+				{
+					"name": "OAuth google",
+					"request": {
+						"url": "{{URL_API}}/oauth/google",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {},
 						"description": ""
 					},
 					"response": []
@@ -58,6 +125,7 @@
 				{
 					"name": "Get users list",
 					"request": {
+						"url": "{{URL_API}}/users",
 						"method": "GET",
 						"header": [
 							{
@@ -70,22 +138,14 @@
 							}
 						],
 						"body": {},
-						"url": {
-							"raw": "{{URL_API}}/users",
-							"host": [
-								"{{URL_API}}"
-							],
-							"path": [
-								"users"
-							]
-						},
-						"description": ""
+						"description": null
 					},
 					"response": []
 				},
 				{
 					"name": "Add user",
 					"request": {
+						"url": "{{URL_API}}/users",
 						"method": "POST",
 						"header": [
 							{
@@ -101,22 +161,14 @@
 							"mode": "raw",
 							"raw": "{\n  \"mail\": \"admin1@gmail.com\",\n  \"password\": \"admin\"\n}"
 						},
-						"url": {
-							"raw": "{{URL_API}}/users",
-							"host": [
-								"{{URL_API}}"
-							],
-							"path": [
-								"users"
-							]
-						},
-						"description": ""
+						"description": null
 					},
 					"response": []
 				},
 				{
 					"name": "Update user",
 					"request": {
+						"url": "{{URL_API}}/users/{{USER_ID}}",
 						"method": "PATCH",
 						"header": [
 							{
@@ -132,23 +184,14 @@
 							"mode": "raw",
 							"raw": "{\n    \"id\": \"{{USER_ID}}\",\n    \"mail\": \"ivan54@gmail.com\",\n    \"password\": \"1234567\",\n    \"created_on\": 0,\n    \"updated_on\": 0\n}"
 						},
-						"url": {
-							"raw": "{{URL_API}}/users/{{USER_ID}}",
-							"host": [
-								"{{URL_API}}"
-							],
-							"path": [
-								"users",
-								"{{USER_ID}}"
-							]
-						},
-						"description": ""
+						"description": null
 					},
 					"response": []
 				},
 				{
 					"name": "Delete user",
 					"request": {
+						"url": "{{URL_API}}/users/{{USER_ID}}",
 						"method": "DELETE",
 						"header": [
 							{
@@ -157,17 +200,7 @@
 							}
 						],
 						"body": {},
-						"url": {
-							"raw": "{{URL_API}}/users/{{USER_ID}}",
-							"host": [
-								"{{URL_API}}"
-							],
-							"path": [
-								"users",
-								"{{USER_ID}}"
-							]
-						},
-						"description": ""
+						"description": null
 					},
 					"response": []
 				}
