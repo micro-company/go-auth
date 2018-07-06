@@ -38,9 +38,9 @@ docker-compose up
 | RECAPTCHA_PRIVATE_KEY       | secretKey                                  |
 | ENABLE_CAPTCHA              | false                                      |
 | **OAuth**                   | --                                         |
-| OAUTH_GOOGLE_CLIENT_ID      / --                                         /
-| OAUTH_GOOGLE_CLIENT_SECRET  / --                                         /
-| OAUTH_REDIRECT_URL          | http://localhost:3000/auth/callback/:type  /
+| OAUTH_GOOGLE_CLIENT_ID      | --                                         |
+| OAUTH_GOOGLE_CLIENT_SECRET  | --                                         |
+| OAUTH_REDIRECT_URL          | http://localhost:3000/auth/callback/:type  |
 
 ### Generation cert
 
