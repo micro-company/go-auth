@@ -36,10 +36,6 @@ func Error(w http.ResponseWriter, err error) {
 // own. Also take a look at https://github.com/pressly/lg for a dedicated pkg based
 // on this work, designed for context-based http routers.
 
-type StructuredLogger struct {
-	Logger *logrus.Logger
-}
-
 func NewStructuredLogger(logger *logrus.Logger) func(next http.Handler) http.Handler {
 	return middleware.RequestLogger(&StructuredLogger{logger})
 }
@@ -70,10 +66,6 @@ func (l *StructuredLogger) NewLogEntry(r *http.Request) middleware.LogEntry {
 	entry.Logger.Infoln("request started")
 
 	return entry
-}
-
-type StructuredLoggerEntry struct {
-	Logger logrus.FieldLogger
 }
 
 func (l *StructuredLoggerEntry) Write(status, bytes int, elapsed time.Duration) {

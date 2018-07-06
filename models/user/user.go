@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/micro-company/go-auth/db"
+	"github.com/micro-company/go-auth/utils/crypto"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -53,11 +54,18 @@ func FindCount(user User) (int, error) {
 
 func Add(user User) (error, User) {
 	var checkUser User
-	checkUser.Mail = user.Mail
+	checkUser.Email = user.Email
 	result, err := FindCount(checkUser)
 	if result > 0 {
 		return err, user
 	}
+
+	id := bson.NewObjectId()
+	user.Id = &id
+	user.Password, _ = crypto.HashPassword(user.Password)
+	time := time.Now()
+	user.CreatedAt = &time
+	user.UpdatedAt = &time
 
 	err = db.Session.DB("auth").C(CollectionUser).Insert(user)
 	if err != nil {
@@ -70,7 +78,7 @@ func Add(user User) (error, User) {
 func Update(user User) (error, User) {
 	UpdatedAt := time.Now()
 	user.UpdatedAt = &UpdatedAt
-	user.Mail = nil // prohibit changing address
+	user.Email = nil // prohibit changing address
 
 	err := db.Session.DB("auth").C(CollectionUser).UpdateId(user.Id, bson.M{"$set": user})
 	if err != nil {

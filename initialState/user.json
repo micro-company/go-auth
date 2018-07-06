@@ -1,5 +1,5 @@
 {
     "_id" : ObjectId("5a245c0e3b4ca85a768c4019"),
-    "mail" : "admin@example.com",
+  "email": "admin@example.com",
     "password" : "$2a$14$Lqibdmq4nKxMIx/xvwBQ2ulx7qKDxI.9H/Uwuk8EktUWoYCErJvgy"
 }

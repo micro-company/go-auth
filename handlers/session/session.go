@@ -5,11 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"net/http"
-	"time"
-
-	"gopkg.in/mgo.v2/bson"
 
 	pb "github.com/micro-company/go-auth/grpc/mail"
 	grpcServer "github.com/micro-company/go-auth/grpc/server"
@@ -17,6 +15,7 @@ import (
 	"github.com/micro-company/go-auth/utils/crypto"
 
 	"github.com/go-chi/chi"
+	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/micro-company/go-auth/handlers/user"
 	"github.com/micro-company/go-auth/models/session"
 	"github.com/micro-company/go-auth/models/user"
@@ -38,6 +37,7 @@ func init() {
 func Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.Captcha)
+	r.Use(chiMiddleware.AllowContentType("application/json"))
 
 	r.Get("/debug/{token}", Debug)
 	r.Post("/", Login)
@@ -68,7 +68,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var passwordUser = user.Password
-	var searchUser = userModel.User{Mail: user.Mail}
+	var searchUser = userModel.User{Email: user.Email}
 	user, err = userModel.FindOne(searchUser)
 	if err != nil {
 		utils.Error(w, errors.New(`{"mail":"incorrect mail or password"}`))
@@ -82,18 +82,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create JWT token
-	timeTTL := time.Minute * 1
-	timeDuration := time.Now().Add(timeTTL).Unix()
-
-	// get access token
-	tokenString, err := sessionModel.NewAccessToken(timeDuration)
-	if err != nil {
-		utils.Error(w, errors.New(`"`+err.Error()+`"`))
-		return
-	}
-
-	// get refresh token
-	refreshToken, err := sessionModel.NewRefreshToken(timeTTL)
+	tokenString, refreshToken, err := CreateJWTToken()
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
@@ -178,18 +167,7 @@ func Refresh(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create JWT token
-	TTL := time.Minute * 5
-	timeDuration := time.Now().Add(TTL).Unix()
-
-	// get access token
-	tokenString, err := sessionModel.NewAccessToken(timeDuration)
-	if err != nil {
-		utils.Error(w, errors.New(`"`+err.Error()+`"`))
-		return
-	}
-
-	// get refresh token
-	refreshToken, err := sessionModel.NewRefreshToken(TTL)
+	tokenString, refreshToken, err := CreateJWTToken()
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
@@ -224,7 +202,7 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 
 	// search user by mail
 	searchUser := userModel.User{}
-	searchUser.Mail = user.Mail
+	searchUser.Email = user.Email
 	user, err = userModel.FindOne(searchUser)
 	if err != nil {
 		utils.Error(w, errors.New(`{"mail":"incorrect mail"}`))
@@ -243,7 +221,7 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 	c := pb.NewMailClient(conn)
 	_, err = c.SendMail(context.Background(), &pb.MailRequest{
 		Template: "recovery",
-		Mail:     *user.Mail,
+		Mail:     *user.Email,
 		Url:      "http://localhost:3000/recovery/" + recoveryLink,
 	})
 	if err != nil {

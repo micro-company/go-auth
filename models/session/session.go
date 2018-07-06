@@ -24,12 +24,6 @@ var (
 	signKey   *rsa.PrivateKey
 )
 
-// Session model
-type Session struct {
-	token  string
-	status bool
-}
-
 func init() {
 	// Logging =================================================================
 	// Setup the logger backend using Sirupsen/logrus and configure

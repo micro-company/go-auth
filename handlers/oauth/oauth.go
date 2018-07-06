@@ -1,14 +1,9 @@
 package oauth
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/go-chi/chi"
 	"github.com/micro-company/go-auth/middleware"
-	"net/http"
-	"google.golang.org/appengine"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/appengine/urlfetch"
+	"github.com/sirupsen/logrus"
 )
 
 var log = logrus.New()
@@ -26,27 +21,8 @@ func Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.Captcha)
 
-	r.Get("/google", Google)
+	r.Get("/google", googleOAuth)
+	r.Post("/callback/google", googleCallback)
 
 	return r
-}
-
-func Google(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	ctx := appengine.NewContext(r)
-
-	client := &http.Client{
-		Transport: &oauth2.Transport{
-			Source: google.AppEngineTokenSource(ctx, "https://www.googleapis.com/auth/bigquery"),
-			Base: &urlfetch.Transport{
-				Context: ctx,
-			},
-		},
-	}
-
-	client.Get("...")
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{}`))
 }

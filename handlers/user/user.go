@@ -3,15 +3,14 @@ package user
 import (
 	"encoding/json"
 	"errors"
+	"github.com/micro-company/go-auth/middleware"
 	"io/ioutil"
 	"net/http"
-	"time"
-
-	"github.com/micro-company/go-auth/middleware"
 
 	"github.com/micro-company/go-auth/utils/crypto"
 
 	"github.com/go-chi/chi"
+	chiMiddleware "github.com/go-chi/chi/middleware"
 	"github.com/micro-company/go-auth/models/user"
 	"github.com/micro-company/go-auth/utils"
 	"github.com/opentracing/opentracing-go"
@@ -33,6 +32,7 @@ func init() {
 func Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Use(middleware.CheckAuth)
+	r.Use(chiMiddleware.AllowContentType("application/json"))
 
 	r.Get("/", List)
 	r.Post("/", Create)
@@ -87,13 +87,6 @@ func Create(w http.ResponseWriter, r *http.Request) {
 	if is_err {
 		return
 	}
-
-	id := bson.NewObjectId()
-	user.Id = &id
-	user.Password, _ = crypto.HashPassword(user.Password)
-	time := time.Now()
-	user.CreatedAt = &time
-	user.UpdatedAt = &time
 
 	err, user = userModel.Add(user)
 	if err != nil {

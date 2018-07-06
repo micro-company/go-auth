@@ -30,13 +30,17 @@ docker-compose up
 
 ### ENV
 
-| Name ENV              | Default value             |
-|-----------------------|---------------------------|
-| PORT                  | 4070                      |
-| MONGO_URL             | localhost/auth            |
-| REDIS_URL             | redis://localhost:6379    |
-| RECAPTCHA_PRIVATE_KEY | secretKey                 |
-| ENABLE_CAPTCHA        | false                      |
+| Name ENV                    | Default value                              |
+|-----------------------------|--------------------------------------------|
+| PORT                        | 4070                                       |
+| MONGO_URL                   | localhost/auth                             |
+| REDIS_URL                   | redis://localhost:6379                     |
+| RECAPTCHA_PRIVATE_KEY       | secretKey                                  |
+| ENABLE_CAPTCHA              | false                                      |
+| **OAuth**                   | --                                         |
+| OAUTH_GOOGLE_CLIENT_ID      / --                                         /
+| OAUTH_GOOGLE_CLIENT_SECRET  / --                                         /
+| OAUTH_REDIRECT_URL          | http://localhost:3000/auth/callback/:type  /
 
 ### Generation cert
 
@@ -87,3 +91,7 @@ helm del --purge go-auth
 ### Initial state for data base
 
 `initialState/user.json` - contains initial information 
+
+### OAuth
+
++ [Google setting](https://developers.google.com/identity/protocols/OAuth2)
