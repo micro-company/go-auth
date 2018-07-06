@@ -7,7 +7,7 @@ import (
 
 func CreateJWTToken() (string, string, error) {
 	// Create JWT token
-	timeTTL := time.Minute * 1
+	timeTTL := time.Minute * 5
 	timeDuration := time.Now().Add(timeTTL).Unix()
 
 	// get access token
