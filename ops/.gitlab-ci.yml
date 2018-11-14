@@ -20,16 +20,11 @@
   variables:
     GIT_STRATEGY: none
   script:
-  - export DEPLOYS=$(helm ls | grep $RELEASE_NAME | wc -l)
-  - if [ ${DEPLOYS}  -eq 0 ]; then
-      helm --kube-context $KUBE_CONTEXT install
-        --name $RELEASE_NAME
-        --namespace=$PROJECT_NAMESPACE
-        $HELM_PATH;
-    else
-      helm --kube-context $KUBE_CONTEXT upgrade $RELEASE_NAME $HELM_PATH
-        --namespace=$PROJECT_NAMESPACE;
-    fi
+  - helm --kube-context $KUBE_CONTEXT upgrade $RELEASE_NAME $HELM_PATH
+    --install
+    --force
+    --wait
+    --namespace=$PROJECT_NAMESPACE;
   except:
   - branches
   when: manual
