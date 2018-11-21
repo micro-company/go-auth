@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ template "goAuth.fullname" . }}
   labels:
-    app: {{ .Chart.Name }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app: {{ template "goAuth.name" . }}
+    chart: {{ template "goAuth.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 data:

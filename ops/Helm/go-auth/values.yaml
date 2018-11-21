@@ -1,3 +1,7 @@
+## Add additional labels to all resources
+##
+extraLabels:
+
 # Default values for go-auth.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
@@ -25,6 +29,17 @@ server:
       cpu: 100m
       memory: 100Mi
   nodeSelector: {}
+
+## Service Account
+## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
+##
+serviceAccount:
+  create: true
+
+  ## The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the fullname template
+  name: goAuth
+
 service:
   name: auth
   type: ClusterIP
@@ -35,6 +50,7 @@ service:
   ## serviceType NodePort.
   ## Default: nil
   # nodePort: 30000
+
 ingress:
   enabled: false
   hosts:
@@ -49,6 +65,7 @@ ingress:
     # - secretName: chart-example-tls
     #   hosts:
     #     - chart-example.local
+
 serverConfigFile:
   private_key.pem: |
     -----BEGIN RSA PRIVATE KEY-----
@@ -102,3 +119,18 @@ mongodb:
     # storageClass:
     # accessMode: ReadWriteOnce
     # size: 8Gi
+
+redis:
+  networkPolicy:
+    enabled: true
+
+  serviceAccount:
+    ## Specifies whether a ServiceAccount should be created
+    ##
+    create: true
+    ## The name of the ServiceAccount to use.
+    ## If not set and create is true, a name is generated using the fullname template
+    name: goAuth
+
+  rbac:
+    create: true

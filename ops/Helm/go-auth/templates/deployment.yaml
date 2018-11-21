@@ -1,10 +1,10 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}
+  name: {{ template "goAuth.fullname" . }}
   labels:
-    app: {{ .Chart.Name }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    app: {{ template "goAuth.name" . }}
+    chart: {{ template "goAuth.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 spec:
@@ -18,7 +18,7 @@ spec:
 {{ toYaml .Values.server.podAnnotations | indent 8 }}
     spec:
       containers:
-        - name: {{ .Chart.Name }}
+        - name: {{ template "goAuth.fullname" . }}
           image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
           imagePullPolicy: {{ .Values.server.image.imagePullPolicy }}
           enableServiceLinks: false
@@ -49,7 +49,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: {{ .Chart.Name }}
+            name: {{ template "goAuth.fullname" . }}
     {{- if .Values.server.nodeSelector }}
       nodeSelector:
 {{ toYaml .Values.server.nodeSelector | indent 8 }}
