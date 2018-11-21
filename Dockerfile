@@ -1,4 +1,4 @@
-FROM golang:1.9.2-alpine as builder
+FROM golang:1.11.2-alpine as builder
 
 # Install dep
 RUN apk add --update ca-certificates git && \
@@ -8,7 +8,7 @@ RUN apk add --update ca-certificates git && \
 WORKDIR /go/src/github.com/micro-company/go-auth
 COPY . .
 RUN dep ensure
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o go-auth cmd/go-auth/main.go
 
 FROM alpine:latest
 
@@ -16,5 +16,5 @@ RUN addgroup -S 997 && adduser -S -g 997 997
 USER 997
 
 WORKDIR /app/
-COPY --from=builder /go/src/github.com/micro-company/go-auth/app .
-CMD ["./app"]
+COPY --from=builder /go/src/github.com/micro-company/go-auth/go-auth .
+CMD ["./go-auth"]

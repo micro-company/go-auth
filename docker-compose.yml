@@ -27,7 +27,6 @@ services:
     volumes:
     - ./initialState:/initialState
 
-
   redis:
     image: redis:alpine
     container_name: redis

@@ -1,4 +1,4 @@
-APP?=go-mail-crd
+APP?=cmd/go-auth
 GRPC_PORT?=50051
 
 clean:

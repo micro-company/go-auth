@@ -30,6 +30,9 @@ server:
       memory: 100Mi
   nodeSelector: {}
 
+metrics:
+  enabled: false
+
 ## Service Account
 ## Ref: https://kubernetes.io/docs/admin/service-accounts-admin/
 ##
@@ -39,6 +42,19 @@ serviceAccount:
   ## The name of the ServiceAccount to use.
   ## If not set and create is true, a name is generated using the fullname template
   name: goAuth
+
+networkPolicy:
+  ## Specifies whether a NetworkPolicy should be created
+  ##
+  enabled: true
+  apiVersion: networking.k8s.io/v1
+
+  ## The Policy model to apply. When set to false, only pods with the correct
+  ## client label will have network access to the port Redis is listening
+  ## on. When true, Redis will accept connections from any source
+  ## (with the correct destination port).
+  ##
+  # allowExternal: true
 
 service:
   name: auth
