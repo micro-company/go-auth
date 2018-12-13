@@ -1,21 +1,22 @@
 [[constraint]]
   name = "github.com/dgrijalva/jwt-go"
-  version = "3.0.0"
+  version = "3.2.0"
 
 [[constraint]]
   name = "github.com/go-chi/chi"
-  version = "3.3.0"
+  version = "3.3.3"
 
 [[constraint]]
   name = "github.com/go-chi/render"
-  version = "1.0.0"
+  version = "1.0.1"
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"
-  version = "1.0.3"
+  version = "1.2.0"
 
 [[constraint]]
   name = "golang.org/x/crypto"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/opentracing/opentracing-go"
@@ -23,7 +24,7 @@
 
 [[constraint]]
   name = "github.com/uber/jaeger-client-go"
-  version = "2.9.0"
+  version = "2.15.0"
 
 [[constraint]]
   name = "github.com/go-chi/cors"
@@ -31,16 +32,13 @@
 
 [[constraint]]
   name = "github.com/google/uuid"
-  version = "0.2.0"
+  version = "1.1.0"
 
 [[constraint]]
   name = "github.com/go-redis/redis"
-  version = "6.7.3"
+  version = "6.14.2"
 
 [[constraint]]
   branch = "master"
   name = "golang.org/x/oauth2"
 
-[[constraint]]
-  name = "cloud.google.com/go"
-  version = "0.24.0"

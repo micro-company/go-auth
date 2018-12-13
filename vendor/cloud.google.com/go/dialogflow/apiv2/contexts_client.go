@@ -17,12 +17,12 @@
 package dialogflow
 
 import (
+	"context"
 	"math"
 	"time"
 
-	"cloud.google.com/go/internal/version"
+	"github.com/golang/protobuf/proto"
 	gax "github.com/googleapis/gax-go"
-	"golang.org/x/net/context"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
@@ -140,8 +140,8 @@ func (c *ContextsClient) Close() error {
 // the `x-goog-api-client` header passed on each request. Intended for
 // use by Google-written clients.
 func (c *ContextsClient) setGoogleClientInfo(keyval ...string) {
-	kv := append([]string{"gl-go", version.Go()}, keyval...)
-	kv = append(kv, "gapic", version.Repo, "gax", gax.Version, "grpc", grpc.Version)
+	kv := append([]string{"gl-go", versionGo()}, keyval...)
+	kv = append(kv, "gapic", versionClient, "gax", gax.Version, "grpc", grpc.Version)
 	c.xGoogMetadata = metadata.Pairs("x-goog-api-client", gax.XGoogHeader(kv...))
 }
 
@@ -150,6 +150,7 @@ func (c *ContextsClient) ListContexts(ctx context.Context, req *dialogflowpb.Lis
 	ctx = insertMetadata(ctx, c.xGoogMetadata)
 	opts = append(c.CallOptions.ListContexts[0:len(c.CallOptions.ListContexts):len(c.CallOptions.ListContexts)], opts...)
 	it := &ContextIterator{}
+	req = proto.Clone(req).(*dialogflowpb.ListContextsRequest)
 	it.InternalFetch = func(pageSize int, pageToken string) ([]*dialogflowpb.Context, string, error) {
 		var resp *dialogflowpb.ListContextsResponse
 		req.PageToken = pageToken
@@ -177,6 +178,7 @@ func (c *ContextsClient) ListContexts(ctx context.Context, req *dialogflowpb.Lis
 		return nextPageToken, nil
 	}
 	it.pageInfo, it.nextFunc = iterator.NewPageInfo(fetch, it.bufLen, it.takeBuf)
+	it.pageInfo.MaxSize = int(req.PageSize)
 	return it
 }
 

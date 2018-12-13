@@ -3,7 +3,6 @@ package redis
 import (
 	"fmt"
 	"net"
-	"time"
 
 	"github.com/go-redis/redis/internal/hashtag"
 	"github.com/go-redis/redis/internal/pool"
@@ -15,14 +14,6 @@ func (c *baseClient) Pool() pool.Pooler {
 
 func (c *PubSub) SetNetConn(netConn net.Conn) {
 	c.cn = pool.NewConn(netConn)
-}
-
-func (c *PubSub) ReceiveMessageTimeout(timeout time.Duration) (*Message, error) {
-	return c.receiveMessage(timeout)
-}
-
-func (c *ClusterClient) GetState() (*clusterState, error) {
-	return c.state.Get()
 }
 
 func (c *ClusterClient) LoadState() (*clusterState, error) {
@@ -49,7 +40,7 @@ func (c *ClusterClient) Nodes(key string) ([]*clusterNode, error) {
 	}
 
 	slot := hashtag.Slot(key)
-	nodes := state.slots[slot]
+	nodes := state.slotNodes(slot)
 	if len(nodes) != 2 {
 		return nil, fmt.Errorf("slot=%d does not have enough nodes: %v", slot, nodes)
 	}

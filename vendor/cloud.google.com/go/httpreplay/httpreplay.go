@@ -12,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// +build go1.8
-
 // Package httpreplay provides an API for recording and replaying traffic
 // from HTTP-based Google API clients.
 //
@@ -36,10 +34,10 @@ package httpreplay
 // TODO(jba): add examples.
 
 import (
+	"context"
 	"net/http"
 
 	"cloud.google.com/go/httpreplay/internal/proxy"
-	"golang.org/x/net/context"
 	"google.golang.org/api/option"
 	htransport "google.golang.org/api/transport/http"
 )
@@ -109,6 +107,11 @@ func (r *Replayer) Initial() []byte {
 	return r.proxy.Initial
 }
 
+// IgnoreHeader will not use h when matching requests.
+func (r *Replayer) IgnoreHeader(h string) {
+	r.proxy.IgnoreHeader(h)
+}
+
 // Close closes the replayer.
 func (r *Replayer) Close() error {
 	return r.proxy.Close()
@@ -120,3 +123,7 @@ func (r *Replayer) Close() error {
 func DebugHeaders() {
 	proxy.DebugHeaders = true
 }
+
+// Supported reports whether httpreplay is supported in the current version of Go.
+// For Go 1.8 and above, the answer is true.
+func Supported() bool { return true }

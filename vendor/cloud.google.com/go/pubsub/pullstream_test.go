@@ -15,10 +15,10 @@
 package pubsub
 
 import (
+	"context"
 	"testing"
 
 	gax "github.com/googleapis/gax-go"
-	"golang.org/x/net/context"
 	pb "google.golang.org/genproto/googleapis/pubsub/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -28,6 +28,7 @@ func TestPullStreamGet(t *testing.T) {
 	// Test that we retry on the initial Send call from pullstream.get. We don't do this
 	// test with the server in fake_test.go because there's no clear way to get Send
 	// to fail from the server.
+	t.Parallel()
 	for _, test := range []struct {
 		desc     string
 		errors   []error
@@ -61,7 +62,7 @@ func TestPullStreamGet(t *testing.T) {
 			test.errors = test.errors[1:]
 			return &testStreamingPullClient{sendError: err}, nil
 		}
-		ps := newPullStream(context.Background(), streamingPull, "", 0)
+		ps := newPullStream(context.Background(), streamingPull, "")
 		_, err := ps.get(nil)
 		if got := status.Code(err); got != test.wantCode {
 			t.Errorf("%s: got %s, want %s", test.desc, got, test.wantCode)
