@@ -4,9 +4,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/micro-company/go-auth/db"
+	"github.com/micro-company/go-auth/db/mongodb"
 	"github.com/micro-company/go-auth/utils/crypto"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/mongodb/mongo-go-driver/bson"
 )
 
 const (
@@ -16,35 +16,39 @@ const (
 
 func List() (error, []User) {
 	var users []User
-	err := db.Session.DB("auth").C(CollectionUser).Find(nil).Sort("-updated_on").All(&users)
-	if err != nil {
-		return err, users
-	}
+	//err := mongodb.Session.Database("auth").Collection(CollectionUser).Find(nil).Sort("-updated_on").All(&users)
+	//cursor, err := mongodb.Session.Database("auth").Collection(CollectionUser).Find(nil, users)
+	//if err != nil {
+	//	return err, users
+	//}
 
 	return nil, users
 }
 
-func Find(user User) (error, []User) {
-	var users []User
-	err := db.Session.DB("auth").C(CollectionUser).Find(user).Sort("-updated_on").All(&users)
-	if err != nil {
-		return err, users
+func Find(user User) (*[]User, error) {
+	var users *[]User
+	res := mongodb.Session.Database("auth").Collection(CollectionUser).FindOne(nil, user)
+	res.Decode(users)
+	if res.Err() != nil {
+		return nil, res.Err()
 	}
 
-	return nil, users
+	return users, nil
 }
 
-func FindOne(user User) (User, error) {
-	err := db.Session.DB("auth").C(CollectionUser).Find(user).One(&user)
-	if err != nil {
-		return user, err
+func FindOne(user User) (*User, error) {
+	res := mongodb.Session.Database("auth").Collection(CollectionUser).FindOne(nil, user)
+	if res.Err() != nil {
+		return nil, res.Err()
 	}
 
-	return user, nil
+	var us *User
+	res.Decode(us)
+	return us, nil
 }
 
-func FindCount(user User) (int, error) {
-	count, err := db.Session.DB("auth").C(CollectionUser).Find(user).Count()
+func FindCount(user User) (int64, error) {
+	count, err := mongodb.Session.Database("auth").Collection(CollectionUser).Count(nil, user)
 	if err != nil {
 		return count, err
 	}
@@ -60,39 +64,37 @@ func Add(user User) (error, User) {
 		return err, user
 	}
 
-	id := bson.NewObjectId()
-	user.Id = &id
 	user.Password, _ = crypto.HashPassword(user.Password)
 	time := time.Now()
-	user.CreatedAt = &time
 	user.UpdatedAt = &time
 
-	err = db.Session.DB("auth").C(CollectionUser).Insert(user)
+	res, err := mongodb.Session.Database("auth").Collection(CollectionUser).InsertOne(nil, user)
 	if err != nil {
 		return errors.New(`{"mail":"need uniq mail"}`), user
 	}
 
+	user.Id = res.InsertedID.(string)
+
 	return nil, user
 }
 
-func Update(user User) (error, User) {
+func Update(user *User) (*User, error) {
 	UpdatedAt := time.Now()
 	user.UpdatedAt = &UpdatedAt
 	user.Email = nil // prohibit changing address
 
-	err := db.Session.DB("auth").C(CollectionUser).UpdateId(user.Id, bson.M{"$set": user})
+	filter := bson.D{{"_id", user.Id}}
+	_, err := mongodb.Session.Database("auth").Collection(CollectionUser).UpdateOne(nil, filter, user)
 	if err != nil {
-		return err, user
+		return nil, err
 	}
 
-	return nil, user
+	return user, nil
 }
 
-func Delete(userId string) error {
-	err := db.Session.DB("auth").C(CollectionUser).RemoveId(bson.ObjectIdHex(userId))
-	if err != nil {
-		return err
-	}
+func Delete(userId string) (int64, error) {
+	filter := bson.D{{"_id", userId}}
+	res, err := mongodb.Session.Database("auth").Collection(CollectionUser).DeleteOne(nil, filter)
 
-	return nil
+	return res.DeletedCount, err
 }

@@ -15,7 +15,6 @@ import (
 	"github.com/micro-company/go-auth/utils"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/mgo.v2/bson"
 )
 
 var log = logrus.New()
@@ -118,7 +117,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user userModel.User
+	var user *userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
@@ -131,16 +130,16 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	*user.Id = bson.ObjectIdHex(userId)
+	user.Id = userId
 	user.Password, _ = crypto.HashPassword(user.Password)
 
-	err, user = userModel.Update(user)
+	user, err = userModel.Update(user)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
 	}
 
-	output, err := json.Marshal(user)
+	output, err := json.Marshal(&user)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
@@ -156,7 +155,7 @@ func Delete(w http.ResponseWriter, r *http.Request) {
 	defer parent.Finish()
 
 	var userId = chi.URLParam(r, "userId")
-	err := userModel.Delete(userId)
+	_, err := userModel.Delete(userId)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return

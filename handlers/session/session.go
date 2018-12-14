@@ -60,7 +60,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user userModel.User
+	var user *userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
@@ -193,7 +193,7 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user userModel.User
+	var user *userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
@@ -210,7 +210,7 @@ func Recovery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get refresh token
-	recoveryLink, err := sessionModel.NewRecoveryLink(user.Id.Hex())
+	recoveryLink, err := sessionModel.NewRecoveryLink(user.Id)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return
@@ -243,7 +243,7 @@ func RecoveryByToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var user userModel.User
+	var user *userModel.User
 	err = json.Unmarshal(b, &user)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
@@ -263,10 +263,10 @@ func RecoveryByToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t := bson.ObjectIdHex(userId)
-	user.Id = &t
+	user.Id = t.String()
 	user.Password, _ = crypto.HashPassword(user.Password)
 
-	err, user = userModel.Update(user)
+	user, err = userModel.Update(user)
 	if err != nil {
 		utils.Error(w, errors.New(`"`+err.Error()+`"`))
 		return

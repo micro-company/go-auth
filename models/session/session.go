@@ -8,7 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
-	"github.com/micro-company/go-auth/db"
+	"github.com/micro-company/go-auth/db/redis"
 	"github.com/sirupsen/logrus"
 )
 
@@ -74,7 +74,7 @@ func NewAccessToken(timeDuration int64) (string, error) {
 
 func NewRefreshToken(timeDuration time.Duration) (string, error) {
 	refreshToken, _ := uuid.NewUUID()
-	err := db.Redis.Set(refreshToken.String(), "true", timeDuration).Err()
+	err := redis.Redis.Set(refreshToken.String(), "true", timeDuration).Err()
 	if err != nil {
 		return "", err
 	}
@@ -87,7 +87,7 @@ func NewRecoveryLink(value string) (string, error) {
 	refreshToken, _ := uuid.NewUUID()
 	log.Info("NewRecoveryLink", value)
 	log.Info("refreshToken", refreshToken.String())
-	err := db.Redis.Set(refreshToken.String(), value, TTL).Err()
+	err := redis.Redis.Set(refreshToken.String(), value, TTL).Err()
 	if err != nil {
 		return "", err
 	}
@@ -96,7 +96,7 @@ func NewRecoveryLink(value string) (string, error) {
 }
 
 func Delete(token string) error {
-	err := db.Redis.Del(token).Err()
+	err := redis.Redis.Del(token).Err()
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func VerifyToken(tokenString string) (*jwt.Token, error) {
 }
 
 func CheckRefreshToken(token string) (bool, error) {
-	value := db.Redis.Get(token)
+	value := redis.Redis.Get(token)
 	if value.Err() != nil {
 		return false, value.Err()
 	}
@@ -136,7 +136,7 @@ func CheckRefreshToken(token string) (bool, error) {
 }
 
 func GetValueByKey(token string) (string, error) {
-	value := db.Redis.Get(token)
+	value := redis.Redis.Get(token)
 	if value.Err() != nil {
 		return "", value.Err()
 	}

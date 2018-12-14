@@ -33,7 +33,7 @@ docker-compose up
 | Name ENV                    | Default value                              |
 |-----------------------------|--------------------------------------------|
 | PORT                        | 4070                                       |
-| MONGO_URL                   | localhost/auth                             |
+| MONGO_URL                   | mongodb://localhost/auth                   |
 | REDIS_URL                   | redis://localhost:6379                     |
 | RECAPTCHA_PRIVATE_KEY       | secretKey                                  |
 | ENABLE_CAPTCHA              | false                                      |

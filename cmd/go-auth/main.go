@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"github.com/micro-company/go-auth/db/mongodb"
 	"net/http"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
-	"github.com/micro-company/go-auth/db"
+	"github.com/micro-company/go-auth/db/redis"
 	"github.com/micro-company/go-auth/handlers/oauth"
 	"github.com/micro-company/go-auth/handlers/session"
 	"github.com/micro-company/go-auth/handlers/user"
@@ -32,8 +33,8 @@ func init() {
 	log.Formatter = new(logrus.JSONFormatter)
 
 	// Connect to DB
-	db.ConnectToMongo()
-	db.ConnectToRedis()
+	mongodb.ConnectToMongo()
+	redis.ConnectToRedis()
 }
 
 func main() {
