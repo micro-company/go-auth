@@ -17,6 +17,10 @@ spec:
       annotations:
 {{ toYaml .Values.server.podAnnotations | indent 8 }}
     spec:
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "1"
       containers:
         - name: {{ template "goAuth.fullname" . }}
           image: "{{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}"
