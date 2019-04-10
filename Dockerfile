@@ -10,7 +10,7 @@ COPY . .
 RUN dep ensure
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o go-auth cmd/go-auth/main.go
 
-FROM alpine:latest
+FROM scratch:latest
 
 RUN addgroup -S 997 && adduser -S -g 997 997
 USER 997
