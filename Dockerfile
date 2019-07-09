@@ -1,4 +1,4 @@
-FROM golang:1.12.6-alpine as builder
+FROM golang:1.12.7-alpine as builder
 
 # Install dep
 RUN apk add --update ca-certificates git && \
