@@ -3,5 +3,5 @@ dependencies:
   version: 7.4.2
   repository: https://kubernetes-charts.storage.googleapis.com
 - name: redis
-  version: 9.3.2
+  version: 9.3.3
   repository: https://kubernetes-charts.storage.googleapis.com
