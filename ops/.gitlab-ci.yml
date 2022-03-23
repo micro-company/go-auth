@@ -60,7 +60,7 @@ before_script:
 
 postman:
   type: best_practices
-  image: node:17.7.2-alpine
+  image: node:17.8.0-alpine
   before_script:
   - npm install -g newman
   script:
