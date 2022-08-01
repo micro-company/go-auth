@@ -1,6 +1,6 @@
 .best_practices: &best_practices
   type: best_practices
-  image: golang:1.18.4-alpine
+  image: golang:1.18.5-alpine
   before_script:
   - apk add --no-cache git
   only:
